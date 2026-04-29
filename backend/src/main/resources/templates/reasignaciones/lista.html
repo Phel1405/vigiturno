@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar-admin :: navbarAdmin}"></div>
+
+        <main>
+            <section class="page-header">
+                <div>
+                    <h2>Listado de reasignaciones</h2>
+                    <p>Administra cambios de turno, reemplazos y estados de respuesta.</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/reasignaciones/nueva}" class="btn btn-primary">Nueva reasignación</a>
+                </div>
+            </section>
+
+            <section class="card table-card">
+                <div class="table-title">
+                    <h2>Reasignaciones registradas</h2>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Motivo</th>
+                            <th>Fecha solicitud</th>
+                            <th>Fecha respuesta</th>
+                            <th>Estado</th>
+                            <th>Turno</th>
+                            <th>Docente original</th>
+                            <th>Docente reemplazo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(reasignaciones)}">
+                            <td colspan="9">No hay reasignaciones registradas todavía.</td>
+                        </tr>
+
+                        <tr th:each="reasignacion : ${reasignaciones}">
+                            <td th:text="${reasignacion.id}"></td>
+                            <td th:text="${reasignacion.motivo}"></td>
+                            <td th:text="${reasignacion.fechaHoraSolicitud}"></td>
+                            <td th:text="${reasignacion.fechaHoraRespuesta != null ? reasignacion.fechaHoraRespuesta : 'Sin respuesta'}"></td>
+                            <td>
+                                <span th:if="${reasignacion.estado.name() == 'PENDIENTE'}" class="badge badge-warning" th:text="${reasignacion.estado}"></span>
+                                <span th:if="${reasignacion.estado.name() == 'ACEPTADA'}" class="badge badge-success" th:text="${reasignacion.estado}"></span>
+                                <span th:if="${reasignacion.estado.name() == 'RECHAZADA' or reasignacion.estado.name() == 'EXPIRADA'}" class="badge badge-danger" th:text="${reasignacion.estado}"></span>
+                            </td>
+                            <td th:text="${reasignacion.turno.id}"></td>
+                            <td th:text="${reasignacion.docenteOriginal.nombreCompleto}"></td>
+                            <td th:text="${reasignacion.docenteReemplazo != null ? reasignacion.docenteReemplazo.nombreCompleto : 'Sin asignar'}"></td>
+                            <td>
+                                <div class="actions">
+                                    <a th:href="@{'/reasignaciones/editar/' + ${reasignacion.id}}" class="btn btn-outline">Editar</a>
+                                    <a th:href="@{'/reasignaciones/eliminar/' + ${reasignacion.id}}" class="btn btn-outline"
+                                       onclick="return confirm('¿Seguro que deseas eliminar esta reasignación?');">
+                                        Eliminar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

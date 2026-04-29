@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <main>
+            <section class="page-header">
+                <div>
+                    <h2>Listado de incidentes</h2>
+                    <p>Administra los incidentes registrados en zonas y turnos del colegio.</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/incidentes/nuevo}" class="btn btn-primary">Nuevo incidente</a>
+                </div>
+            </section>
+
+            <section class="card table-card">
+                <div class="table-title">
+                    <h2>Incidentes registrados</h2>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Severidad</th>
+                            <th>Descripción</th>
+                            <th>Fecha y hora</th>
+                            <th>Zona</th>
+                            <th>Turno</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(incidentes)}">
+                            <td colspan="8">No hay incidentes registrados todavía.</td>
+                        </tr>
+
+                        <tr th:each="incidente : ${incidentes}">
+                            <td th:text="${incidente.id}">1</td>
+                            <td th:text="${incidente.tipo}">CONVIVENCIA</td>
+                            <td>
+                                <span th:if="${incidente.severidad.name() == 'S1'}" class="badge badge-success" th:text="${incidente.severidad}">S1</span>
+                                <span th:if="${incidente.severidad.name() == 'S2'}" class="badge badge-warning" th:text="${incidente.severidad}">S2</span>
+                                <span th:if="${incidente.severidad.name() == 'S3'}" class="badge badge-danger" th:text="${incidente.severidad}">S3</span>
+                            </td>
+                            <td th:text="${incidente.descripcion}">Descripción del incidente</td>
+                            <td th:text="${incidente.fechaHora}">2026-03-15T10:30</td>
+                            <td th:text="${incidente.zona.nombre}">Patio Central</td>
+                            <td th:text="${incidente.turno != null ? incidente.turno.id : 'Sin turno'}">1</td>
+                            <td>
+                                <div class="actions">
+                                    <a th:href="@{'/incidentes/editar/' + ${incidente.id}}" class="btn btn-outline">Editar</a>
+                                    <a th:href="@{'/incidentes/eliminar/' + ${incidente.id}}"
+                                       class="btn btn-outline"
+                                       onclick="return confirm('¿Seguro que deseas eliminar este incidente?');">
+                                        Eliminar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

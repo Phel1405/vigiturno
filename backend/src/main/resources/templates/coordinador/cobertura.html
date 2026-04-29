@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar-coordinador :: navbarCoordinador}"></div>
+
+        <main class="role-nav-spacer">
+            <section class="page-header">
+                <div>
+                    <h2>Cobertura de zonas</h2>
+                    <p>Vista general del estado operativo de las zonas registradas en el sistema.</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/coordinador}" class="btn btn-outline">Volver al dashboard</a>
+                    <a th:href="@{/turnos}" class="btn btn-primary">Ver turnos</a>
+                    <a th:href="@{/incidentes}" class="btn btn-outline">Ver incidentes</a>
+                </div>
+            </section>
+
+            <section class="dashboard-grid">
+                <article class="card kpi-card">
+                    <p class="kpi-label">Zonas</p>
+                    <p class="kpi-value" th:text="${totalZonas}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Turnos</p>
+                    <p class="kpi-value" th:text="${totalTurnos}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Incidentes</p>
+                    <p class="kpi-value" th:text="${totalIncidentes}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Estado operativo</p>
+                    <p class="kpi-value">Activo</p>
+                </article>
+            </section>
+
+            <section class="coverage-grid">
+                <article th:each="zona, iterStat : ${zonas}"
+                         class="coverage-card"
+                         th:classappend="${iterStat.index % 3 == 0} ? ' ok' : (${iterStat.index % 3 == 1} ? ' warn' : ' alert')">
+
+                    <h3 th:text="${zona.nombre}">Patio Central</h3>
+                    <p th:text="${zona.descripcion != null and !zona.descripcion.isEmpty() ? zona.descripcion : 'Zona registrada para supervisión operativa.'}">
+                        Descripción de la zona
+                    </p>
+
+                    <div class="coverage-meta">
+                        <span><strong>ID:</strong> <span th:text="${zona.id}">1</span></span>
+                        <span><strong>Capacidad máxima:</strong> <span th:text="${zona.capacidadMaxima != null ? zona.capacidadMaxima : 'No definida'}">120</span></span>
+                        <span>
+                            <strong>Estado:</strong>
+                            <span th:if="${zona.activa}" class="badge badge-success">Activa</span>
+                            <span th:unless="${zona.activa}" class="badge badge-danger">Inactiva</span>
+                        </span>
+                    </div>
+
+                    <div class="coverage-actions">
+                        <a th:href="@{/zonas}" class="btn btn-outline">Ver zonas</a>
+                        <a th:href="@{/turnos}" class="btn btn-outline">Turnos</a>
+                        <a th:href="@{/incidentes}" class="btn btn-outline">Incidentes</a>
+                    </div>
+                </article>
+            </section>
+
+            <section class="card list-panel">
+                <h3 class="panel-title">Criterio visual de cobertura</h3>
+                <div class="simple-list">
+                    <div class="simple-list-item">
+                        <strong><span class="badge badge-success">Verde</span> Cobertura adecuada</strong>
+                        <p>Zonas operativas o listas para supervisión.</p>
+                    </div>
+                    <div class="simple-list-item">
+                        <strong><span class="badge badge-warning">Amarillo</span> Atención preventiva</strong>
+                        <p>Zonas que requieren seguimiento o validación próxima.</p>
+                    </div>
+                    <div class="simple-list-item">
+                        <strong><span class="badge badge-danger">Rojo</span> Atención prioritaria</strong>
+                        <p>Zonas que podrían necesitar intervención o revisión operativa.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

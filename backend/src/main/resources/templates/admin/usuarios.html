@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head('Admin - Usuarios')}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <main>
+            <section class="page-header">
+                <div>
+                    <h2>Administración de usuarios</h2>
+                    <p>Acceso rápido al módulo de gestión de usuarios.</p>
+                </div>
+                <div class="actions">
+                    <a th:href="@{/usuarios}" class="btn btn-primary">Abrir CRUD de usuarios</a>
+                </div>
+            </section>
+
+            <section class="card list-panel">
+                <h3 class="panel-title">Descripción</h3>
+                <div class="simple-list">
+                    <div class="simple-list-item">
+                        <strong>Objetivo</strong>
+                        <p>Administrar docentes, coordinadores y administradores del sistema.</p>
+                    </div>
+                    <div class="simple-list-item">
+                        <strong>Funciones</strong>
+                        <p>Crear, editar, consultar y eliminar usuarios registrados.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

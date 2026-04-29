@@ -1,0 +1,13 @@
+# Angular
+**/node_modules/
+**/dist/
+
+# Java / Spring
+**/target/
+**/.gradle/
+**/build/
+*.class
+
+# Otros
+.DS_Store
+.vscode/

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar-coordinador :: navbarCoordinador}"></div>
+
+        <main class="role-nav-spacer">
+            <section class="page-header">
+                <div>
+                    <h2>Centro de alertas</h2>
+                    <p>Monitorea incidentes, turnos y cambios operativos que requieren atención.</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/coordinador}" class="btn btn-outline">Volver al dashboard</a>
+                    <a th:href="@{/coordinador/cobertura}" class="btn btn-primary">Cobertura</a>
+                    <a th:href="@{/coordinador/reasignaciones}" class="btn btn-outline">Reasignaciones</a>
+                </div>
+            </section>
+
+            <section class="dashboard-grid">
+                <article class="card kpi-card">
+                    <p class="kpi-label">Incidentes</p>
+                    <p class="kpi-value" th:text="${totalIncidentes}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Reasignaciones</p>
+                    <p class="kpi-value" th:text="${totalReasignaciones}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Turnos</p>
+                    <p class="kpi-value" th:text="${totalTurnos}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Prioridad</p>
+                    <p class="kpi-value">Alta</p>
+                </article>
+            </section>
+
+            <section class="alert-grid">
+                <article class="card alert-card">
+                    <h3>Incidentes recientes</h3>
+
+                    <div class="alert-list">
+                        <div th:if="${#lists.isEmpty(incidentes)}" class="alert-item">
+                            <strong>Sin incidentes</strong>
+                            <p>No hay incidentes recientes registrados.</p>
+                        </div>
+
+                        <div th:each="incidente : ${incidentes}" class="alert-item">
+                            <strong th:text="${incidente.tipo}">CONVIVENCIA</strong>
+                            <p th:text="${incidente.descripcion}">Descripción del incidente</p>
+                            <div class="meta">
+                                <span><strong>Zona:</strong> <span th:text="${incidente.zona.nombre}">Patio</span></span>
+                                <br>
+                                <span><strong>Severidad:</strong> <span th:text="${incidente.severidad}">S2</span></span>
+                                <br>
+                                <span><strong>Fecha:</strong> <span th:text="${incidente.fechaHora}">2026-03-15T10:30</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card alert-card">
+                    <h3>Reasignaciones recientes</h3>
+
+                    <div class="alert-list">
+                        <div th:if="${#lists.isEmpty(reasignaciones)}" class="alert-item">
+                            <strong>Sin reasignaciones</strong>
+                            <p>No hay solicitudes recientes en el sistema.</p>
+                        </div>
+
+                        <div th:each="reasignacion : ${reasignaciones}" class="alert-item">
+                            <strong th:text="${reasignacion.estado}">PENDIENTE</strong>
+                            <p th:text="${reasignacion.motivo}">Motivo de la reasignación</p>
+                            <div class="meta">
+                                <span><strong>Turno:</strong> <span th:text="${reasignacion.turno.id}">1</span></span>
+                                <br>
+                                <span><strong>Docente original:</strong> <span th:text="${reasignacion.docenteOriginal.nombreCompleto}">Ana Martínez</span></span>
+                                <br>
+                                <span><strong>Solicitud:</strong> <span th:text="${reasignacion.fechaHoraSolicitud}">2026-03-15T08:00</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="card table-card">
+                <div class="table-title">
+                    <h2>Turnos bajo observación</h2>
+                    <a th:href="@{/turnos}" class="btn btn-outline">Ver todos</a>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Hora inicio</th>
+                            <th>Zona</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(turnos)}">
+                            <td colspan="5">No hay turnos registrados.</td>
+                        </tr>
+
+                        <tr th:each="turno : ${turnos}">
+                            <td th:text="${turno.id}"></td>
+                            <td th:text="${turno.fecha}"></td>
+                            <td th:text="${turno.horaInicio}"></td>
+                            <td th:text="${turno.zona.nombre}"></td>
+                            <td th:text="${turno.estado}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

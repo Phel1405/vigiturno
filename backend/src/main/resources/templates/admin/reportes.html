@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head('Admin - Reportes')}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <main>
+            <section class="page-header">
+                <div>
+                    <h2>Reportes y analítica</h2>
+                    <p>Vista ejecutiva de métricas, cobertura e incidentes.</p>
+                </div>
+            </section>
+
+            <section class="dashboard-grid">
+                <article class="card kpi-card">
+                    <p class="kpi-label">Cobertura</p>
+                    <p class="kpi-value">92%</p>
+                </article>
+                <article class="card kpi-card">
+                    <p class="kpi-label">Incidentes</p>
+                    <p class="kpi-value">14</p>
+                </article>
+                <article class="card kpi-card">
+                    <p class="kpi-label">Reasignaciones</p>
+                    <p class="kpi-value">6</p>
+                </article>
+                <article class="card kpi-card">
+                    <p class="kpi-label">Notificaciones</p>
+                    <p class="kpi-value">21</p>
+                </article>
+            </section>
+
+            <section class="panel-grid">
+                <article class="card list-panel">
+                    <h3 class="panel-title">Indicadores</h3>
+                    <div class="simple-list">
+                        <div class="simple-list-item">
+                            <strong>Puntualidad</strong>
+                            <p>Indicador estimado de cumplimiento de turnos programados.</p>
+                        </div>
+                        <div class="simple-list-item">
+                            <strong>Distribución por zona</strong>
+                            <p>Base para futuros mapas de calor y análisis por ubicación.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card activity-panel">
+                    <h3 class="panel-title">Estado</h3>
+                    <div class="simple-list-item">
+                        <strong>Módulo en construcción</strong>
+                        <p>Este panel servirá para consolidar reportes reales del sistema.</p>
+                    </div>
+                </article>
+            </section>
+        </main>
+    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

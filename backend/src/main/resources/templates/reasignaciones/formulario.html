@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar reasignación' : 'Nueva reasignación')}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar-admin :: navbarAdmin}"></div>
+
+        <main class="role-nav-spacer">
+            <section class="page-header">
+                <div>
+                    <h2 th:text="${modoEdicion} ? 'Editar reasignación' : 'Crear nueva reasignación'">Reasignación</h2>
+                    <p>Completa la información del cambio o propuesta de reemplazo.</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/reasignaciones}" class="btn btn-outline">Volver al listado</a>
+                </div>
+            </section>
+
+            <section class="card form-card">
+                <form th:action="@{/reasignaciones/guardar}" th:object="${reasignacion}" method="post" class="form-grid">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="form-group">
+                        <label for="motivo">Motivo</label>
+                        <textarea id="motivo" th:field="*{motivo}" class="textarea" placeholder="Describe el motivo de la reasignación" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fechaHoraSolicitud">Fecha y hora de solicitud</label>
+                        <input id="fechaHoraSolicitud" type="datetime-local" th:field="*{fechaHoraSolicitud}" class="input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fechaHoraRespuesta">Fecha y hora de respuesta</label>
+                        <input id="fechaHoraRespuesta" type="datetime-local" th:field="*{fechaHoraRespuesta}" class="input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado" th:field="*{estado}" class="select" required>
+                            <option value="">Selecciona un estado</option>
+                            <option th:each="estado : ${estados}" th:value="${estado}" th:text="${estado}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="turno">Turno</label>
+                        <select id="turno" name="turno" class="select" required>
+                            <option value="">Selecciona un turno</option>
+                            <option th:each="turno : ${turnos}"
+                                    th:value="${turno.id}"
+                                    th:text="${'Turno #' + turno.id + ' - ' + turno.fecha + ' - ' + turno.zona.nombre}"
+                                    th:selected="${reasignacion.turno != null and reasignacion.turno.id == turno.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="docenteOriginal">Docente original</label>
+                        <select id="docenteOriginal" name="docenteOriginal" class="select" required>
+                            <option value="">Selecciona un docente</option>
+                            <option th:each="usuario : ${usuarios}"
+                                    th:value="${usuario.id}"
+                                    th:text="${usuario.nombreCompleto + ' - ' + usuario.rol}"
+                                    th:selected="${reasignacion.docenteOriginal != null and reasignacion.docenteOriginal.id == usuario.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="docenteReemplazo">Docente reemplazo</label>
+                        <select id="docenteReemplazo" name="docenteReemplazo" class="select">
+                            <option value="">Sin reemplazo asignado</option>
+                            <option th:each="usuario : ${usuarios}"
+                                    th:value="${usuario.id}"
+                                    th:text="${usuario.nombreCompleto + ' - ' + usuario.rol}"
+                                    th:selected="${reasignacion.docenteReemplazo != null and reasignacion.docenteReemplazo.id == usuario.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary"
+                                th:text="${modoEdicion ? 'Actualizar reasignación' : 'Guardar reasignación'}"></button>
+                        <a th:href="@{/reasignaciones}" class="btn btn-outline">Cancelar</a>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

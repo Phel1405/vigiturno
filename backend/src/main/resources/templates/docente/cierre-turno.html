@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar-docente :: navbarDocente}"></div>
+
+        <main class="role-nav-spacer">
+            <section class="page-header">
+                <div>
+                    <h2 th:text="'Cierre de turno de ' + ${docente.nombreCompleto}">Cierre de turno</h2>
+                    <p>Resumen del último turno asociado al docente seleccionado.</p>
+                </div>
+                <div class="actions">
+                    <a th:href="@{/docente(usuarioId=${docente.id})}" class="btn btn-outline">Volver al dashboard</a>
+                </div>
+            </section>
+
+            <section th:if="${ultimoTurno != null}" class="card form-card">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input class="input" th:value="${ultimoTurno.fecha}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Zona</label>
+                        <input class="input" th:value="${ultimoTurno.zona.nombre}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hora inicio</label>
+                        <input class="input" th:value="${ultimoTurno.horaInicio}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hora fin</label>
+                        <input class="input" th:value="${ultimoTurno.horaFin}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <input class="input" th:value="${ultimoTurno.estado}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observaciones</label>
+                        <textarea class="textarea" readonly>Turno finalizado y disponible para validación de cierre.</textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section th:if="${ultimoTurno == null}" class="card form-card">
+                <div class="simple-list-item">
+                    <strong>Sin turnos registrados</strong>
+                    <p>No hay un turno reciente para mostrar en el cierre.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

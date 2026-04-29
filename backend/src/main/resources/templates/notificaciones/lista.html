@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <main>
+            <section class="page-header">
+                <div>
+                    <h2>Listado de notificaciones</h2>
+                    <p>Administra avisos, alertas y recordatorios enviados a usuarios.</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/notificaciones/nueva}" class="btn btn-primary">Nueva notificación</a>
+                </div>
+            </section>
+
+            <section class="card table-card">
+                <div class="table-title">
+                    <h2>Notificaciones registradas</h2>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tipo</th>
+                            <th>Mensaje</th>
+                            <th>Fecha y hora</th>
+                            <th>Leída</th>
+                            <th>Usuario</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(notificaciones)}">
+                            <td colspan="7">No hay notificaciones registradas todavía.</td>
+                        </tr>
+
+                        <tr th:each="notificacion : ${notificaciones}">
+                            <td th:text="${notificacion.id}">1</td>
+                            <td th:text="${notificacion.tipo}">RECORDATORIO_TURNO</td>
+                            <td th:text="${notificacion.mensaje}">Mensaje</td>
+                            <td th:text="${notificacion.fechaHora}">2026-03-15T08:00</td>
+                            <td>
+                                <span th:if="${notificacion.leida}" class="badge badge-success">Sí</span>
+                                <span th:unless="${notificacion.leida}" class="badge badge-warning">No</span>
+                            </td>
+                            <td th:text="${notificacion.usuario.nombreCompleto}">Ana Martínez</td>
+                            <td>
+                                <div class="actions">
+                                    <a th:href="@{'/notificaciones/editar/' + ${notificacion.id}}" class="btn btn-outline">Editar</a>
+                                    <a th:href="@{'/notificaciones/eliminar/' + ${notificacion.id}}"
+                                       class="btn btn-outline"
+                                       onclick="return confirm('¿Seguro que deseas eliminar esta notificación?');">
+                                        Eliminar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

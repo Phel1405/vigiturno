@@ -1,0 +1,19 @@
+<nav th:fragment="navbarDocente" class="main-nav card">
+    <div class="nav-left">
+        <a th:href="@{/docente}" class="nav-brand">
+            <div class="brand-logo small">D</div>
+            <div>
+                <strong>Panel Docente</strong>
+                <div class="nav-subtitle">Turnos, incidentes y notificaciones personales</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="nav-links">
+        <a th:href="@{/docente}" class="nav-link">Dashboard</a>
+        <a th:href="@{/docente/turno-activo}" class="nav-link">Turno activo</a>
+        <a th:href="@{/docente/incidentes}" class="nav-link">Incidentes</a>
+        <a th:href="@{/docente/cierre-turno}" class="nav-link">Cierre</a>
+        <a th:href="@{/}" class="nav-link">Salir</a>
+    </div>
+</nav>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head('Admin - Turnos')}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+        <main>
+            <section class="page-header">
+                <div>
+                    <h2>Administración de turnos</h2>
+                    <p>Programación de vigilancia por fecha, docente y zona.</p>
+                </div>
+                <div class="actions">
+                    <a th:href="@{/turnos}" class="btn btn-primary">Abrir CRUD de turnos</a>
+                </div>
+            </section>
+
+            <section class="card list-panel">
+                <h3 class="panel-title">Resumen</h3>
+                <div class="simple-list">
+                    <div class="simple-list-item">
+                        <strong>Gestión operativa</strong>
+                        <p>Permite asignar responsables a zonas y franjas horarias específicas.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

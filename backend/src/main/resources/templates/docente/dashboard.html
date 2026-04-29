@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar-docente :: navbarDocente}"></div>
+
+        <main class="role-nav-spacer">
+
+            <section th:if="${modoSeleccion}" class="page-header">
+                <div>
+                    <h2>Selecciona un docente</h2>
+                    <p>Elige el perfil de docente que deseas visualizar en la demo.</p>
+                </div>
+            </section>
+
+            <section th:if="${modoSeleccion}" class="card form-card">
+                <form th:action="@{/docente}" method="get" class="form-grid">
+                    <div class="form-group">
+                        <label for="usuarioId">Docente</label>
+                        <select id="usuarioId" name="usuarioId" class="select" required>
+                            <option value="">Selecciona un docente</option>
+                            <option th:each="docente : ${docentes}"
+                                    th:value="${docente.id}"
+                                    th:text="${docente.nombreCompleto + ' - ' + docente.correo}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Entrar al dashboard docente</button>
+                    </div>
+                </form>
+            </section>
+
+            <section th:unless="${modoSeleccion}" class="page-header">
+                <div>
+                    <h2 th:text="'Dashboard de ' + ${docente.nombreCompleto}">Dashboard docente</h2>
+                    <p th:text="'Correo: ' + ${docente.correo}">Correo docente</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/docente}" class="btn btn-outline">Cambiar docente</a>
+                    <a th:href="@{/turnos}" class="btn btn-primary">Ver turnos</a>
+                </div>
+            </section>
+
+            <section th:unless="${modoSeleccion}" class="dashboard-grid">
+                <article class="card kpi-card">
+                    <p class="kpi-label">Turnos</p>
+                    <p class="kpi-value" th:text="${totalTurnos}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Incidentes</p>
+                    <p class="kpi-value" th:text="${totalIncidentes}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Notificaciones</p>
+                    <p class="kpi-value" th:text="${totalNotificaciones}">0</p>
+                </article>
+
+                <article class="card kpi-card">
+                    <p class="kpi-label">Rol</p>
+                    <p class="kpi-value">Docente</p>
+                </article>
+            </section>
+
+            <section th:unless="${modoSeleccion}" class="panel-grid">
+                <article class="card list-panel">
+                    <h3 class="panel-title">Próximo turno</h3>
+                    <div th:if="${proximoTurno != null}" class="simple-list">
+                        <div class="simple-list-item">
+                            <strong th:text="${proximoTurno.zona.nombre}">Zona</strong>
+                            <p th:text="${proximoTurno.fecha + ' · ' + proximoTurno.horaInicio + ' - ' + proximoTurno.horaFin}">
+                                Fecha y hora
+                            </p>
+                        </div>
+                    </div>
+                    <div th:if="${proximoTurno == null}" class="simple-list-item">
+                        <strong>Sin turnos próximos</strong>
+                        <p>No hay turnos asociados a este docente.</p>
+                    </div>
+                </article>
+
+                <article class="card activity-panel">
+                    <h3 class="panel-title">Acciones rápidas</h3>
+                    <div class="button-row">
+                        <a th:href="@{/docente/turno-activo(usuarioId=${docente.id})}" class="btn btn-primary">Turno activo</a>
+                        <a th:href="@{/docente/incidentes(usuarioId=${docente.id})}" class="btn btn-outline">Incidentes</a>
+                        <a th:href="@{/docente/cierre-turno(usuarioId=${docente.id})}" class="btn btn-outline">Cierre</a>
+                    </div>
+                </article>
+            </section>
+
+            <section th:unless="${modoSeleccion}" class="panel-grid">
+                <article class="card table-card">
+                    <div class="table-title">
+                        <h2>Agenda de turnos</h2>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Hora inicio</th>
+                                <th>Hora fin</th>
+                                <th>Zona</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(turnosRecientes)}">
+                                <td colspan="5">No hay turnos asignados a este docente.</td>
+                            </tr>
+                            <tr th:each="turno : ${turnosRecientes}">
+                                <td th:text="${turno.fecha}">2026-03-15</td>
+                                <td th:text="${turno.horaInicio}">09:30</td>
+                                <td th:text="${turno.horaFin}">10:00</td>
+                                <td th:text="${turno.zona.nombre}">Patio Central</td>
+                                <td th:text="${turno.estado}">PENDIENTE</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+                <article class="card table-card">
+                    <div class="table-title">
+                        <h2>Incidentes recientes</h2>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Severidad</th>
+                                <th>Zona</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(incidentesRecientes)}">
+                                <td colspan="4">No hay incidentes asociados a este docente.</td>
+                            </tr>
+                            <tr th:each="incidente : ${incidentesRecientes}">
+                                <td th:text="${incidente.tipo}">CONVIVENCIA</td>
+                                <td th:text="${incidente.severidad}">S2</td>
+                                <td th:text="${incidente.zona.nombre}">Patio</td>
+                                <td th:text="${incidente.fechaHora}">2026-03-15T10:30</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </section>
+
+            <section th:unless="${modoSeleccion}" class="card table-card">
+                <div class="table-title">
+                    <h2>Notificaciones</h2>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Mensaje</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(notificacionesRecientes)}">
+                            <td colspan="3">No hay notificaciones para este docente.</td>
+                        </tr>
+                        <tr th:each="notificacion : ${notificacionesRecientes}">
+                            <td th:text="${notificacion.tipo}">RECORDATORIO_TURNO</td>
+                            <td th:text="${notificacion.mensaje}">Mensaje</td>
+                            <td>
+                                <span th:if="${notificacion.leida}" class="badge badge-success">Leída</span>
+                                <span th:unless="${notificacion.leida}" class="badge badge-warning">Pendiente</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

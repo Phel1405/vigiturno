@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragments/head :: head(${titulo})}"></div>
+<body>
+    <div class="container">
+        <div th:replace="~{fragments/navbar-admin :: navbarAdmin}"></div>
+
+        <main>
+            <section class="page-header">
+                <div>
+                    <h2>Listado de turnos</h2>
+                    <p>Administra la programación de vigilancia por fecha, zona y docente.</p>
+                </div>
+
+                <div class="actions">
+                    <a th:href="@{/turnos/nuevo}" class="btn btn-primary">Nuevo turno</a>
+                </div>
+            </section>
+
+            <section class="card table-card">
+                <div class="table-title">
+                    <h2>Turnos registrados</h2>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Hora inicio</th>
+                            <th>Hora fin</th>
+                            <th>Estado</th>
+                            <th>Usuario</th>
+                            <th>Zona</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(turnos)}">
+                            <td colspan="8">No hay turnos registrados todavía.</td>
+                        </tr>
+
+                        <tr th:each="turno : ${turnos}">
+                            <td th:text="${turno.id}"></td>
+                            <td th:text="${turno.fecha}"></td>
+                            <td th:text="${turno.horaInicio}"></td>
+                            <td th:text="${turno.horaFin}"></td>
+                            <td>
+                                <span th:if="${turno.estado.name() == 'PENDIENTE'}" class="badge badge-warning" th:text="${turno.estado}"></span>
+                                <span th:if="${turno.estado.name() == 'EN_CURSO'}" class="badge badge-success" th:text="${turno.estado}"></span>
+                                <span th:if="${turno.estado.name() == 'FINALIZADO'}" class="badge badge-success" th:text="${turno.estado}"></span>
+                                <span th:if="${turno.estado.name() == 'REASIGNADO'}" class="badge badge-warning" th:text="${turno.estado}"></span>
+                                <span th:if="${turno.estado.name() == 'CANCELADO'}" class="badge badge-danger" th:text="${turno.estado}"></span>
+                            </td>
+                            <td th:text="${turno.usuario.nombreCompleto}"></td>
+                            <td th:text="${turno.zona.nombre}"></td>
+                            <td>
+                                <div class="actions">
+                                    <a th:href="@{'/turnos/editar/' + ${turno.id}}" class="btn btn-outline">Editar</a>
+                                    <a th:href="@{'/turnos/eliminar/' + ${turno.id}}" class="btn btn-outline"
+                                       onclick="return confirm('¿Seguro que deseas eliminar este turno?');">
+                                        Eliminar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

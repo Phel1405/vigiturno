@@ -1,0 +1,17 @@
+<nav th:fragment="navbarHome" class="main-nav card">
+    <div class="nav-left">
+        <a th:href="@{/}" class="nav-brand">
+            <div class="brand-logo small">V</div>
+            <div>
+                <strong>VigiTurno</strong>
+                <div class="nav-subtitle">Plataforma de supervisión docente</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="nav-links">
+        <a th:href="@{/docente}" class="nav-link">Docente</a>
+        <a th:href="@{/coordinador}" class="nav-link">Coordinador</a>
+        <a th:href="@{/admin}" class="nav-link">Administrador</a>
+    </div>
+</nav>
