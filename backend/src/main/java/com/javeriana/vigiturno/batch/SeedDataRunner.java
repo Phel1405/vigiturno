@@ -27,13 +27,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Programa batch de carga inicial de datos.
- *
- * Se ejecuta una sola vez al iniciar Spring Boot cuando la base de datos está vacía.
- * Crea datos suficientes para probar la SPA: usuarios, zonas, turnos,
- * incidentes, notificaciones y una reasignación.
- */
 @Component
 @RequiredArgsConstructor
 public class SeedDataRunner implements CommandLineRunner {
@@ -97,6 +90,13 @@ public class SeedDataRunner implements CommandLineRunner {
 
         usuarioRepository.saveAll(List.of(admin, coordinador, docenteAna, docenteLuis, docenteMarta));
 
+        Zona entradaPrincipal = Zona.builder()
+                .nombre("Entrada Principal")
+                .descripcion("Punto de acceso y salida de rutas")
+                .capacidadMaxima(250)
+                .activa(true)
+                .build();
+
         Zona patioCentral = Zona.builder()
                 .nombre("Patio central")
                 .descripcion("Zona principal de recreo de bachillerato")
@@ -125,7 +125,7 @@ public class SeedDataRunner implements CommandLineRunner {
                 .activa(true)
                 .build();
 
-        zonaRepository.saveAll(List.of(patioCentral, cafeteria, cancha, pasilloPrimaria));
+        zonaRepository.saveAll(List.of(patioCentral, cafeteria, cancha, pasilloPrimaria, entradaPrincipal));
 
         LocalDate hoy = LocalDate.now();
 
@@ -165,7 +165,44 @@ public class SeedDataRunner implements CommandLineRunner {
                 .zona(pasilloPrimaria)
                 .build();
 
-        turnoRepository.saveAll(List.of(turno1, turno2, turno3, turno4));
+        Turno turnoCritico = Turno.builder()
+                .fecha(hoy)
+                .horaInicio(LocalTime.now().minusMinutes(5)) // Ya pasaron 5 min y sigue PENDIENTE
+                .horaFin(LocalTime.now().plusMinutes(25))
+                .estado(EstadoTurno.PENDIENTE)
+                .usuario(docenteMarta)
+                .zona(entradaPrincipal)
+                .build();
+
+        Turno turnoFinalizado = Turno.builder()
+                .fecha(hoy.minusDays(1))
+                .horaInicio(LocalTime.of(12, 0))
+                .horaFin(LocalTime.of(12, 30))
+                .estado(EstadoTurno.FINALIZADO)
+                .calificacionLimpieza(3) // Mucha basura
+                .usuario(docenteLuis)
+                .zona(cafeteria)
+                .build();
+
+        Turno turnoPasilloEnCurso = Turno.builder()
+                .fecha(hoy)
+                .horaInicio(LocalTime.now().minusMinutes(10))
+                .horaFin(LocalTime.now().plusMinutes(20))
+                .estado(EstadoTurno.EN_CURSO)
+                .usuario(docenteAna)
+                .zona(pasilloPrimaria)
+                .build();
+
+        Turno turnoPasilloProximo = Turno.builder()
+                .fecha(hoy)
+                .horaInicio(LocalTime.now().plusMinutes(5))
+                .horaFin(LocalTime.now().plusMinutes(35))
+                .estado(EstadoTurno.PENDIENTE)
+                .usuario(docenteLuis)
+                .zona(pasilloPrimaria)
+                .build();
+
+        turnoRepository.saveAll(List.of(turno1, turno2, turno3, turno4, turnoCritico, turnoFinalizado, turnoPasilloEnCurso, turnoPasilloProximo));
 
         Incidente incidente1 = Incidente.builder()
                 .tipo(TipoIncidente.CONVIVENCIA)
@@ -194,7 +231,16 @@ public class SeedDataRunner implements CommandLineRunner {
                 .turno(turno3)
                 .build();
 
-        incidenteRepository.saveAll(List.of(incidente1, incidente2, incidente3));
+        Incidente incidenteGrave = Incidente.builder()
+                .tipo(TipoIncidente.SEGURIDAD)
+                .severidad(SeveridadIncidente.S3)
+                .descripcion("Estudiante con herida abierta tras caída en cancha. Se traslada a enfermería.")
+                .fechaHora(LocalDateTime.now())
+                .zona(cancha)
+                .turno(turno4)
+                .build();
+
+        incidenteRepository.saveAll(List.of(incidente1, incidente2, incidente3, incidenteGrave));
 
         Notificacion notificacion1 = Notificacion.builder()
                 .tipo(TipoNotificacion.RECORDATORIO_TURNO)
@@ -212,7 +258,15 @@ public class SeedDataRunner implements CommandLineRunner {
                 .usuario(coordinador)
                 .build();
 
-        notificacionRepository.saveAll(List.of(notificacion1, notificacion2));
+        Notificacion alertaIncidenteS3 = Notificacion.builder()
+                .tipo(TipoNotificacion.ALERTA_CRITICA)
+                .mensaje("¡URGENTE! Incidente S3 en " + cancha.getNombre() + ": Estudiante requiere atención inmediata. Ver detalles en el módulo de incidentes.")
+                .fechaHora(LocalDateTime.now())
+                .leida(false)
+                .usuario(coordinador)
+                .build();
+
+        notificacionRepository.saveAll(List.of(notificacion1, notificacion2, alertaIncidenteS3));
 
         Reasignacion reasignacion = Reasignacion.builder()
                 .motivo("Docente original reporta reunión institucional inesperada.")

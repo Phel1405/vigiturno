@@ -31,8 +31,8 @@ export class ApiService {
   crearTurno(data: Turno): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos`, data); }
   actualizarTurno(id: number, data: Turno): Observable<Turno> { return this.http.put<Turno>(`${this.api}/turnos/${id}`, data); }
   eliminarTurno(id: number): Observable<void> { return this.http.delete<void>(`${this.api}/turnos/${id}`); }
-  checkInTurno(id: number, codigoPin: string): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/check-in?codigoPin=${codigoPin}`, {}); }
-  cerrarTurno(id: number, calificacionLimpieza: number): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/cerrar?calificacionLimpieza=${calificacionLimpieza}`, {}); }
+  checkInTurno(id: number): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/iniciar-sin-codigo`, {}); }
+  cerrarTurno(id: number, calificacionLimpieza: number): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/finalizar`, { calificacionLimpieza }); }
 
   incidentes(): Observable<Incidente[]> { return this.http.get<Incidente[]>(`${this.api}/incidentes`); }
   crearIncidente(data: Incidente): Observable<Incidente> { return this.http.post<Incidente>(`${this.api}/incidentes`, data); }

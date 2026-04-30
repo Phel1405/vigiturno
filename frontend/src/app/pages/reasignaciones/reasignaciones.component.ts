@@ -136,21 +136,13 @@ export class ReasignacionesComponent implements OnInit {
   }
 
   guardar(): void {
-
-    if (!this.isAdmin() && this.usuarioIdActivo === null) {
-      this.error = 'No se pudo identificar al usuario activo.';
-      return;
-    }
-
     const payload = {
       ...this.form,
       turnoId: Number(this.form.turnoId),
-      docenteOriginalId: this.isAdmin() ? Number(this.form.docenteOriginalId)! : this.usuarioIdActivo,
+      docenteOriginalId: this.isAdmin() ? Number(this.form.docenteOriginalId) : (this.usuarioIdActivo ?? 0),
       docenteReemplazoId: this.form.docenteReemplazoId ? Number(this.form.docenteReemplazoId) : null
     };
-    const request = payload.id
-        ? this.api.actualizarReasignacion(payload.id, payload as Reasignacion)
-        : this.api.crearReasignacion(payload as Reasignacion);
+    const request = payload.id ? this.api.actualizarReasignacion(payload.id, payload) : this.api.crearReasignacion(payload);
     request.subscribe({ next: () => { this.nuevo(); this.cargar(); }, error: () => this.error = 'No se pudo guardar la reasignación.' });
   }
 

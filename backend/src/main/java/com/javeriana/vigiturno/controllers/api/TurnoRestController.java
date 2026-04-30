@@ -2,6 +2,7 @@ package com.javeriana.vigiturno.controllers.api;
 
 import com.javeriana.vigiturno.dtos.api.ApiDtos.TurnoDto;
 import com.javeriana.vigiturno.dtos.api.ApiDtos.TurnoRequest;
+import com.javeriana.vigiturno.dtos.api.ApiDtos.FinalizarTurnoRequest;
 import com.javeriana.vigiturno.dtos.api.ApiDtos.UsuarioDto;
 import com.javeriana.vigiturno.dtos.api.ApiMapper;
 import com.javeriana.vigiturno.exceptions.ResourceNotFoundException;
@@ -98,18 +99,18 @@ public class TurnoRestController {
         return ApiMapper.toDto(turnoService.guardar(turno), turnoService);
     }
 
-    @PostMapping("/{id}/check-in")
-    public TurnoDto checkIn(@PathVariable Long id, @RequestParam("codigoPin") String codigoPin) {
+    @PostMapping("/{id}/iniciar-sin-codigo")
+    public TurnoDto iniciarSinCodigo(@PathVariable Long id) {
         Turno turno = turnoService.buscarPorId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + id));
-        return ApiMapper.toDto(turnoService.registrarCheckIn(turno, codigoPin), turnoService);
+        return ApiMapper.toDto(turnoService.registrarCheckInSinCodigo(turno), turnoService);
     }
 
-    @PostMapping("/{id}/cerrar")
-    public TurnoDto cerrar(@PathVariable Long id, @RequestParam("calificacionLimpieza") Integer calificacionLimpieza) {
+    @PostMapping("/{id}/finalizar")
+    public TurnoDto finalizar(@PathVariable Long id, @RequestBody FinalizarTurnoRequest body) {
         Turno turno = turnoService.buscarPorId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + id));
-        return ApiMapper.toDto(turnoService.cerrarTurno(turno, calificacionLimpieza), turnoService);
+        return ApiMapper.toDto(turnoService.cerrarTurno(turno, body.calificacionLimpieza()), turnoService);
     }
 
     @DeleteMapping("/{id}")

@@ -36,6 +36,8 @@ export interface Turno {
   usuarioNombre?: string;
   zonaId: number;
   zonaNombre?: string;
+  calificacionLimpieza?: number;
+  horaFinReal?: string;
 }
 
 export interface Incidente {

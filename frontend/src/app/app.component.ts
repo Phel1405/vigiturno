@@ -16,16 +16,16 @@ import { Usuario } from './core/models';
           <span class="brand-mark">VT</span>
           <div>
             <strong>VigiTurno</strong>
-            <small>Sistema de Vigilencia Docente</small>
+            <small>App para vigilancia docente</small>
           </div>
         </div>
 
-        <div style="padding: 1rem;">
-          <label style="font-size: 0.8rem; color: #666;">Simular Usuario</label>
-          <select [(ngModel)]="usuarioSeleccionadoId" (change)="cambiarUsuario()" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; border-radius: 4px;">
-            <option [ngValue]="null">-- Seleccionar (ADMIN por defecto) --</option>
-            <option *ngFor="let u of usuarios" [ngValue]="u.id">{{ u.nombreCompleto }} ({{ u.rol }})</option>
-          </select>
+        <div style="padding: 1rem;" *ngIf="usuarioSeleccionadoId">
+          <label style="font-size: 0.8rem; color: #666;">Usuario actual</label>
+          <div style="font-size: 0.9rem; margin-top: 0.25rem;">
+            <strong>{{ getRol() }}</strong>
+          </div>
+          <button class="ghost" style="margin-top: 0.5rem; width: 100%; color: #e74c3c; border: 1px solid #e74c3c;" (click)="salir()">Salir</button>
         </div>
 
         <nav>
@@ -45,6 +45,7 @@ import { Usuario } from './core/models';
           <ng-container *ngIf="getRol() === 'COORDINADOR'">
             <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Módulo Coordinador</div>
             <a routerLink="/dashboard" routerLinkActive="active">Mapa de Zonas</a>
+            <a routerLink="/turnos" routerLinkActive="active">Turnos</a>
             <a routerLink="/reasignaciones" routerLinkActive="active">Reasignaciones</a>
             <a routerLink="/incidentes" routerLinkActive="active">Incidentes</a>
             <a routerLink="/notificaciones" routerLinkActive="active">Notificaciones</a>
@@ -56,6 +57,11 @@ import { Usuario } from './core/models';
             <a routerLink="/turnos" routerLinkActive="active">Mis Turnos</a>
             <a routerLink="/incidentes" routerLinkActive="active">Reportar Incidente</a>
             <a routerLink="/notificaciones" routerLinkActive="active">Mis Notificaciones</a>
+          </ng-container>
+          <!-- NO NAVBAR -->
+          <ng-container *ngIf="!usuarioSeleccionadoId">
+            <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Selecciona un rol</div>
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
           </ng-container>
         </nav>
       </aside>
@@ -80,20 +86,14 @@ export class AppComponent implements OnInit {
     }
   }
 
-  cambiarUsuario() {
-    if (this.usuarioSeleccionadoId) {
-      localStorage.setItem('usuarioActivo', this.usuarioSeleccionadoId.toString());
-    } else {
-      localStorage.removeItem('usuarioActivo');
-    }
-
-    const rol = this.getRol()
-    const rutaDestino = (rol === 'DOCENTE') ? '/turnos' : '/dashboard';
-    this.router.navigate([rutaDestino]).then(() => window.location.reload());
+  salir() {
+    localStorage.removeItem('usuarioActivo');
+    this.usuarioSeleccionadoId = null;
+    this.router.navigate(['/']).then(() => window.location.reload());
   }
 
   getRol(): string {
-    if (!this.usuarioSeleccionadoId) return 'ADMINISTRADOR';
+    if (!this.usuarioSeleccionadoId) return '';
     const u = this.usuarios.find(x => x.id === this.usuarioSeleccionadoId);
     return u ? u.rol : 'ADMINISTRADOR';
   }
