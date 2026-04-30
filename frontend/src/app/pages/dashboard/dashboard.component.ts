@@ -12,7 +12,7 @@ import { forkJoin } from 'rxjs';
     <section class="page-header">
       <div>
         <h1>Dashboard operativo</h1>
-        <p>Resumen en vivo para convertir VigiTurno en una experiencia SPA.</p>
+        <p>Resumen en vivo.</p>
       </div>
       <button class="secondary" (click)="cargar()">Actualizar</button>
     </section>

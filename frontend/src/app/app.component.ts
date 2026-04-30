@@ -16,7 +16,7 @@ import { Usuario } from './core/models';
           <span class="brand-mark">VT</span>
           <div>
             <strong>VigiTurno</strong>
-            <small>SPA Angular + REST</small>
+            <small>Sistema de Vigilencia Docente</small>
           </div>
         </div>
 
@@ -53,7 +53,6 @@ import { Usuario } from './core/models';
           <!-- DOCENTE NAVBAR -->
           <ng-container *ngIf="getRol() === 'DOCENTE'">
             <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Módulo Docente</div>
-            <a routerLink="/dashboard" routerLinkActive="active">Inicio</a>
             <a routerLink="/turnos" routerLinkActive="active">Mis Turnos</a>
             <a routerLink="/incidentes" routerLinkActive="active">Reportar Incidente</a>
             <a routerLink="/notificaciones" routerLinkActive="active">Mis Notificaciones</a>
@@ -87,7 +86,10 @@ export class AppComponent implements OnInit {
     } else {
       localStorage.removeItem('usuarioActivo');
     }
-    this.router.navigate(['/dashboard']).then(() => window.location.reload());
+
+    const rol = this.getRol()
+    const rutaDestino = (rol === 'DOCENTE') ? '/turnos' : '/dashboard';
+    this.router.navigate([rutaDestino]).then(() => window.location.reload());
   }
 
   getRol(): string {
