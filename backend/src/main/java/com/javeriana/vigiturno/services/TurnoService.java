@@ -77,16 +77,13 @@ public class TurnoService {
     }
 
     @Transactional
-    public Turno registrarCheckIn(Turno turno, String codigoPin) {
+    public Turno registrarCheckInSinCodigo(Turno turno) {
         if (!puedeHacerCheckIn(turno)) {
             throw new BusinessException("El check-in solo está disponible desde " + MINUTOS_ANTES_CHECK_IN
                     + " minutos antes del inicio y hasta antes de finalizar el turno.");
         }
         if (turno.getEstado() == EstadoTurno.CANCELADO || turno.getEstado() == EstadoTurno.FINALIZADO) {
             throw new BusinessException("No se puede registrar check-in en un turno cerrado o cancelado.");
-        }
-        if (turno.getZona().getCodigoPin() != null && !turno.getZona().getCodigoPin().equals(codigoPin)) {
-            throw new BusinessException("El código PIN/QR no es válido para esta zona.");
         }
         turno.setEstado(EstadoTurno.EN_CURSO);
         turno.setHoraInicioReal(LocalTime.now());
@@ -97,6 +94,9 @@ public class TurnoService {
     public Turno cerrarTurno(Turno turno, Integer calificacionLimpieza) {
         if (turno.getEstado() != EstadoTurno.EN_CURSO) {
             throw new BusinessException("Solo se pueden cerrar turnos que estén EN CURSO.");
+        }
+        if (LocalDateTime.now().isBefore(finTurno(turno))) {
+            throw new BusinessException("Solo se puede finalizar el turno después de su hora de fin programada (" + turno.getHoraFin() + ").");
         }
         if (calificacionLimpieza == null || calificacionLimpieza < 1 || calificacionLimpieza > 4) {
             throw new BusinessException("Es obligatorio registrar una calificación de limpieza válida (1 a 4).");
@@ -193,6 +193,9 @@ public class TurnoService {
         }
         if (!turno.getHoraFin().isAfter(turno.getHoraInicio())) {
             throw new BusinessException("La hora de fin debe ser posterior a la hora de inicio.");
+        }
+        if (turno.getUsuario() != null && turno.getUsuario().getRol() != RolNombre.DOCENTE) {
+            throw new BusinessException("Solo se pueden asignar turnos a usuarios con rol de DOCENTE.");
         }
     }
 }

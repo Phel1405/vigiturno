@@ -12,7 +12,7 @@ import { forkJoin } from 'rxjs';
     <section class="page-header">
       <div>
         <h1>Dashboard operativo</h1>
-        <p>Resumen en vivo.</p>
+        <p>Resumen en vivo para convertir VigiTurno en una experiencia SPA.</p>
       </div>
       <button class="secondary" (click)="cargar()">Actualizar</button>
     </section>
@@ -44,6 +44,23 @@ import { forkJoin } from 'rxjs';
           </p>
           <p *ngIf="!mz.turno" style="margin: 0; font-size: 0.8rem; color: #888;">
             No hay turno asignado para esta hora.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="card" *ngIf="isAdmin()" style="margin-top:16px;">
+      <h2>Mapa de Limpieza de Zonas (Hoy)</h2>
+      <p>Último reporte de limpieza registrado en cada zona.</p>
+      <div class="grid cols-4" style="margin-top:1rem;">
+        <article *ngFor="let mz of mapaLimpieza" class="card" 
+                 [ngStyle]="{'border-left': '4px solid ' + mz.color}">
+          <h3 style="margin-top: 0;">{{ mz.zona.nombre }}</h3>
+          <p style="margin: 0; font-size: 0.9rem;">
+             Calificación: <strong>{{ mz.calificacionStr }}</strong>
+          </p>
+          <p *ngIf="mz.turno" style="margin: 0; font-size: 0.8rem; color: #888;">
+             Registrada a las {{ mz.turno.horaFinReal || mz.turno.horaFin }} por {{ mz.turno.usuarioNombre }}
           </p>
         </article>
       </div>
@@ -102,6 +119,7 @@ export class DashboardComponent implements OnInit {
   error = '';
 
   mapaZonas: {zona: Zona, color: string, estadoStr: string, turno?: Turno}[] = [];
+  mapaLimpieza: {zona: Zona, color: string, calificacionStr: string, turno?: Turno}[] = [];
   
   usuarioIdActivo: number | null = null;
   rolActivo: string = 'ADMINISTRADOR';
@@ -138,6 +156,7 @@ export class DashboardComponent implements OnInit {
         turnosHoy: this.api.turnosHoy()
       }).subscribe(({zonas, turnosHoy}) => {
         this.calcularMapaZonas(zonas, turnosHoy);
+        this.calcularMapaLimpieza(zonas, turnosHoy);
       });
     }
   }
@@ -176,6 +195,27 @@ export class DashboardComponent implements OnInit {
       }
 
       return { zona, color, estadoStr, turno: turnoActivo };
+    });
+  }
+
+  private calcularMapaLimpieza(zonas: Zona[], turnosHoy: Turno[]) {
+    this.mapaLimpieza = zonas.map(zona => {
+      const turnosDeZona = turnosHoy.filter(t => t.zonaId === zona.id && t.calificacionLimpieza);
+      // Sort to get the latest finished shift with a cleaning rating
+      const ultimoTurno = turnosDeZona.sort((a, b) => (b.horaFinReal || b.horaFin).localeCompare(a.horaFinReal || a.horaFin))[0];
+
+      let color = '#ccc'; // Gris (sin datos)
+      let calificacionStr = 'Sin registros hoy';
+      
+      if (ultimoTurno) {
+         const cal = ultimoTurno.calificacionLimpieza;
+         if (cal === 1) { color = '#2ecc71'; calificacionStr = '1 - Limpio'; }
+         else if (cal === 2) { color = '#f1c40f'; calificacionStr = '2 - Algo de basura'; }
+         else if (cal === 3) { color = '#e67e22'; calificacionStr = '3 - Mucha basura'; }
+         else if (cal === 4) { color = '#e74c3c'; calificacionStr = '4 - Crítico'; }
+      }
+
+      return { zona, color, calificacionStr, turno: ultimoTurno };
     });
   }
 }

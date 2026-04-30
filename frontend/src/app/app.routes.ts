@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { HomeComponent } from './pages/home/home.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { ZonasComponent } from './pages/zonas/zonas.component';
@@ -8,7 +9,7 @@ import { ReasignacionesComponent } from './pages/reasignaciones/reasignaciones.c
 import { NotificacionesComponent } from './pages/notificaciones/notificaciones.component';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+  { path: '', component: HomeComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'usuarios', component: UsuariosComponent },
   { path: 'zonas', component: ZonasComponent },
@@ -16,5 +17,5 @@ export const routes: Routes = [
   { path: 'incidentes', component: IncidentesComponent },
   { path: 'reasignaciones', component: ReasignacionesComponent },
   { path: 'notificaciones', component: NotificacionesComponent },
-  { path: '**', redirectTo: 'dashboard' }
+  { path: '**', redirectTo: '' }
 ];

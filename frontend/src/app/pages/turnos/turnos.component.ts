@@ -29,7 +29,7 @@ import { Meta, Turno, Usuario, Zona } from '../../core/models';
         <label>Hora fin <input name="horaFin" type="time" [(ngModel)]="form.horaFin" required></label>
         <label>Docente
           <select name="usuarioId" [(ngModel)]="form.usuarioId" required>
-            <option *ngFor="let usuario of usuarios" [ngValue]="usuario.id">{{ usuario.nombreCompleto }} — {{ usuario.rol }}</option>
+            <option *ngFor="let docente of docentes" [ngValue]="docente.id">{{ docente.nombreCompleto }}</option>
           </select>
         </label>
         <label>Zona
@@ -58,17 +58,17 @@ import { Meta, Turno, Usuario, Zona } from '../../core/models';
             <td class="actions">
               <!-- Default Actions -->
               <ng-container *ngIf="actionTurnoId !== turno.id">
-                <button class="success" *ngIf="turno.id && turno.puedeCheckIn && (!isAdmin() || isMiTurno(turno))" (click)="iniciarCheckIn(turno.id)">Check-in</button>
-                <button class="warning" *ngIf="turno.id && (turno.estadoOperativo || turno.estado) === 'EN_CURSO' && (!isAdmin() || isMiTurno(turno))" (click)="iniciarCerrar(turno.id)">Cerrar</button>
+                <button class="success" *ngIf="turno.id && turno.puedeCheckIn && (!isAdmin() || isMiTurno(turno))" (click)="iniciarCheckIn(turno.id)">Iniciar turno</button>
+                <button class="warning" *ngIf="turno.id && (turno.estadoOperativo || turno.estado) === 'EN_CURSO' && (!isAdmin() || isMiTurno(turno))" (click)="iniciarCerrar(turno.id)">Finalizar turno</button>
                 <button class="ghost" *ngIf="isAdmin()" (click)="editar(turno)">Editar</button>
                 <button class="danger" *ngIf="isAdmin() && turno.id" (click)="eliminar(turno.id)">Eliminar</button>
               </ng-container>
               
               <!-- Check-In Form -->
               <div *ngIf="actionTurnoId === turno.id && actionType === 'CHECK_IN'" style="display:flex; gap:0.5rem; align-items:center;">
-                <input type="text" [(ngModel)]="actionValue" placeholder="PIN de Zona" style="width:100px; padding:0.25rem;">
-                <button class="success" (click)="confirmarCheckIn()">OK</button>
-                <button class="ghost" (click)="cancelarAccion()">x</button>
+                <span style="font-size:0.8rem;">¿Iniciar turno ahora?</span>
+                <button class="success" (click)="confirmarCheckIn()">Sí, iniciar</button>
+                <button class="ghost" (click)="cancelarAccion()">Cancelar</button>
               </div>
 
               <!-- Cerrar Form -->
@@ -118,6 +118,10 @@ export class TurnosComponent implements OnInit {
     return this.rolActivo !== 'DOCENTE';
   }
 
+  get docentes(): Usuario[] {
+    return this.usuarios.filter(u => u.rol === 'DOCENTE');
+  }
+
   isMiTurno(turno: Turno): boolean {
     return turno.usuarioId === this.usuarioIdActivo;
   }
@@ -158,13 +162,10 @@ export class TurnosComponent implements OnInit {
   }
 
   confirmarCheckIn(): void {
-    if (!this.actionTurnoId || !this.actionValue) {
-       this.error = 'Debe ingresar el PIN.';
-       return;
-    }
-    this.api.checkInTurno(this.actionTurnoId, this.actionValue).subscribe({ 
+    if (!this.actionTurnoId) return;
+    this.api.checkInTurno(this.actionTurnoId).subscribe({ 
       next: () => { this.cargar(); this.cancelarAccion(); }, 
-      error: (err) => this.error = err?.error?.message || 'No se pudo registrar el check-in. Verifica el PIN.' 
+      error: (err) => this.error = err?.error?.message || 'No se pudo iniciar el turno.' 
     });
   }
   

@@ -39,6 +39,7 @@ public final class ApiDtos {
             Integer calificacionLimpieza
     ) {}
     public record TurnoRequest(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, EstadoTurno estado, Long usuarioId, Long zonaId, LocalTime horaInicioReal, LocalTime horaFinReal, Integer calificacionLimpieza) {}
+    public record FinalizarTurnoRequest(Integer calificacionLimpieza) {}
 
     public record IncidenteDto(
             Long id,
