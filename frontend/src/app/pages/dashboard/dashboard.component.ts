@@ -12,7 +12,7 @@ import { forkJoin } from 'rxjs';
     <section class="page-header">
       <div>
         <h1>Dashboard operativo</h1>
-        <p>Resumen en vivo para convertir VigiTurno en una experiencia SPA.</p>
+        <p>Resumen en vivo para mejor vigilancia.</p>
       </div>
       <button class="secondary" (click)="cargar()">Actualizar</button>
     </section>
@@ -167,10 +167,9 @@ export class DashboardComponent implements OnInit {
     this.mapaZonas = zonas.map(zona => {
       const turnosDeZona = turnosHoy.filter(t => t.zonaId === zona.id);
       
-      // Find current or next shift
+      // Encuentra el turno actual o el siguiente
       let turnoActivo = turnosDeZona.find(t => t.horaInicio <= ahoraStr && t.horaFin >= ahoraStr);
       if (!turnoActivo) {
-         // Find next shift today
          turnoActivo = turnosDeZona.filter(t => t.horaInicio > ahoraStr).sort((a,b) => a.horaInicio.localeCompare(b.horaInicio))[0];
       }
 

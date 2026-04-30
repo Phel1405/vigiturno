@@ -29,10 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Programa batch de carga inicial de datos.
- *
  * Se ejecuta una sola vez al iniciar Spring Boot cuando la base de datos está vacía.
- * Crea datos suficientes para probar la SPA: usuarios, zonas, turnos,
- * incidentes, notificaciones y una reasignación.
  */
 @Component
 @RequiredArgsConstructor

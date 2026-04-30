@@ -126,7 +126,6 @@ export class IncidentesComponent implements OnInit {
     };
 
     if (!this.isAdmin()) {
-        // Find the most relevant shift for the Docente (e.g. active right now)
         const misTurnos = this.turnos.filter(t => t.usuarioId === this.usuarioIdActivo);
         const turnoActivo = misTurnos.find(t => t.estadoOperativo === 'EN_CURSO' || t.estado === 'EN_CURSO') || 
                             misTurnos[0]; // fallback to their closest shift
