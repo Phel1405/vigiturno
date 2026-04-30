@@ -28,6 +28,10 @@ export interface Turno {
   horaInicio: string;
   horaFin: string;
   estado: EstadoTurno;
+  estadoOperativo?: EstadoTurno;
+  puedeCheckIn?: boolean;
+  sinCobertura?: boolean;
+  puedeReasignar?: boolean;
   usuarioId: number;
   usuarioNombre?: string;
   zonaId: number;

@@ -34,4 +34,7 @@ public class Zona {
 
     @Column(nullable = false)
     private Boolean activa;
+
+    @Column(name = "codigo_pin", length = 10)
+    private String codigoPin;
 }

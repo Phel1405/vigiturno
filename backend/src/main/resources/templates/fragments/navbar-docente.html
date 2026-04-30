@@ -10,10 +10,10 @@
     </div>
 
     <div class="nav-links">
-        <a th:href="@{/docente}" class="nav-link">Dashboard</a>
-        <a th:href="@{/docente/turno-activo}" class="nav-link">Turno activo</a>
-        <a th:href="@{/docente/incidentes}" class="nav-link">Incidentes</a>
-        <a th:href="@{/docente/cierre-turno}" class="nav-link">Cierre</a>
+        <a th:href="@{/docente(usuarioId=${usuarioIdSeleccionado})}" class="nav-link">Dashboard</a>
+        <a th:href="@{/docente/turno-activo(usuarioId=${usuarioIdSeleccionado})}" class="nav-link">Turno activo</a>
+        <a th:href="@{/docente/incidentes(usuarioId=${usuarioIdSeleccionado})}" class="nav-link">Incidentes</a>
+        <a th:href="@{/docente/cierre-turno(usuarioId=${usuarioIdSeleccionado})}" class="nav-link">Cierre</a>
         <a th:href="@{/}" class="nav-link">Salir</a>
     </div>
 </nav>

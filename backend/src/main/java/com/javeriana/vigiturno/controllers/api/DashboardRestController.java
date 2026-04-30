@@ -71,8 +71,8 @@ public class DashboardRestController {
                 turnos.size(),
                 incidentes.size(),
                 notificaciones.size(),
-                ApiMapper.toDto(proximoTurno),
-                turnos.stream().limit(6).map(ApiMapper::toDto).toList(),
+                ApiMapper.toDto(proximoTurno, turnoService),
+                turnos.stream().limit(6).map(turno -> ApiMapper.toDto(turno, turnoService)).toList(),
                 incidentes.stream().limit(5).map(ApiMapper::toDto).toList(),
                 notificaciones.stream().limit(5).map(ApiMapper::toDto).toList()
         );
@@ -97,7 +97,7 @@ public class DashboardRestController {
         return new DashboardDto(
                 usuarioService.listarTodos().size(),
                 zonaService.listarTodas().size(),
-                turnoService.listarTodos().size(),
+                turnoService.listarDeHoy().size(),
                 incidenteService.listarTodos().size(),
                 reasignacionService.listarTodas().size(),
                 notificacionService.listarTodas().size()

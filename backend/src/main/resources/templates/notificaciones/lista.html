@@ -48,7 +48,7 @@
                                 <span th:if="${notificacion.leida}" class="badge badge-success">Sí</span>
                                 <span th:unless="${notificacion.leida}" class="badge badge-warning">No</span>
                             </td>
-                            <td th:text="${notificacion.usuario.nombreCompleto}">Ana Martínez</td>
+                            <td th:text="${notificacion.usuario?.nombreCompleto ?: 'Sistema'}">Ana Martínez</td>
                             <td>
                                 <div class="actions">
                                     <a th:href="@{'/notificaciones/editar/' + ${notificacion.id}}" class="btn btn-outline">Editar</a>

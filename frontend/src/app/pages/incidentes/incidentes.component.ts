@@ -30,18 +30,25 @@ import { Incidente, Meta, Turno, Zona } from '../../core/models';
           </select>
         </label>
         <label>Fecha y hora <input name="fechaHora" type="datetime-local" [(ngModel)]="form.fechaHora" required></label>
-        <label>Turno asociado
-          <select name="turnoId" [(ngModel)]="form.turnoId">
-            <option [ngValue]="null">Sin turno específico</option>
-            <option *ngFor="let turno of turnos" [ngValue]="turno.id">{{ turno.fecha }} · {{ turno.usuarioNombre }} · {{ turno.zonaNombre }}</option>
-          </select>
-        </label>
-        <label>Zona manual
-          <select name="zonaId" [(ngModel)]="form.zonaId">
-            <option [ngValue]="null">Usar zona del turno</option>
-            <option *ngFor="let zona of zonas" [ngValue]="zona.id">{{ zona.nombre }}</option>
-          </select>
-        </label>
+        <ng-container *ngIf="isAdmin()">
+          <label>Turno asociado
+            <select name="turnoId" [(ngModel)]="form.turnoId">
+              <option [ngValue]="null">Sin turno específico</option>
+              <option *ngFor="let turno of turnos" [ngValue]="turno.id">{{ turno.fecha }} · {{ turno.usuarioNombre }} · {{ turno.zonaNombre }}</option>
+            </select>
+          </label>
+          <label>Zona manual
+            <select name="zonaId" [(ngModel)]="form.zonaId">
+              <option [ngValue]="null">Usar zona del turno</option>
+              <option *ngFor="let zona of zonas" [ngValue]="zona.id">{{ zona.nombre }}</option>
+            </select>
+          </label>
+        </ng-container>
+        <ng-container *ngIf="!isAdmin()">
+          <div style="padding: 1rem; background: #f0f4f8; margin-bottom: 1rem; border-radius: 4px;">
+            <strong>Turno Automático:</strong> El incidente se asociará a tu turno activo o al último turno si estás en la ventana de cierre.
+          </div>
+        </ng-container>
         <label>Nombre estudiante <input name="nombreEstudiante" [(ngModel)]="form.nombreEstudiante" placeholder="Solo si aplica"></label>
         <label>Curso estudiante <input name="cursoEstudiante" [(ngModel)]="form.cursoEstudiante" placeholder="Ej. 7B"></label>
         <label class="full">Descripción <textarea name="descripcion" [(ngModel)]="form.descripcion" required></textarea></label>
@@ -82,8 +89,23 @@ export class IncidentesComponent implements OnInit {
   editando = false;
   error = '';
   form: Incidente = this.base();
+  usuarioIdActivo: number | null = null;
+  rolActivo: string = 'ADMINISTRADOR';
 
-  constructor(private readonly api: ApiService) {}
+  constructor(private readonly api: ApiService) {
+    const stored = localStorage.getItem('usuarioActivo');
+    if (stored) {
+      this.usuarioIdActivo = Number(stored);
+      this.api.usuarios().subscribe(us => {
+        const u = us.find(x => x.id === this.usuarioIdActivo);
+        if (u) this.rolActivo = u.rol;
+      });
+    }
+  }
+
+  isAdmin(): boolean {
+    return this.rolActivo !== 'DOCENTE';
+  }
 
   ngOnInit(): void {
     this.cargar();
@@ -102,6 +124,18 @@ export class IncidentesComponent implements OnInit {
       turnoId: this.form.turnoId ? Number(this.form.turnoId) : null,
       zonaId: this.form.zonaId ? Number(this.form.zonaId) : null
     };
+
+    if (!this.isAdmin()) {
+        // Find the most relevant shift for the Docente (e.g. active right now)
+        const misTurnos = this.turnos.filter(t => t.usuarioId === this.usuarioIdActivo);
+        const turnoActivo = misTurnos.find(t => t.estadoOperativo === 'EN_CURSO' || t.estado === 'EN_CURSO') || 
+                            misTurnos[0]; // fallback to their closest shift
+        
+        if (turnoActivo) {
+            payload.turnoId = turnoActivo.id ?? null;
+            payload.zonaId = turnoActivo.zonaId ?? null;
+        }
+    }
     const request = payload.id ? this.api.actualizarIncidente(payload.id, payload) : this.api.crearIncidente(payload);
     request.subscribe({ next: () => { this.nuevo(); this.cargar(); }, error: () => this.error = 'No se pudo guardar el incidente. Si no escoges turno, debes escoger zona.' });
   }

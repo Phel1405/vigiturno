@@ -24,11 +24,15 @@ export class ApiService {
   eliminarZona(id: number): Observable<void> { return this.http.delete<void>(`${this.api}/zonas/${id}`); }
 
   turnos(): Observable<Turno[]> { return this.http.get<Turno[]>(`${this.api}/turnos`); }
+  turnosHoy(): Observable<Turno[]> { return this.http.get<Turno[]>(`${this.api}/turnos/hoy`); }
+  turnosProximos(dias = 7): Observable<Turno[]> { return this.http.get<Turno[]>(`${this.api}/turnos/proximos?dias=${dias}`); }
+  turnosSinCobertura(): Observable<Turno[]> { return this.http.get<Turno[]>(`${this.api}/turnos/sin-cobertura`); }
+  turnosReasignables(): Observable<Turno[]> { return this.http.get<Turno[]>(`${this.api}/turnos/reasignables`); }
   crearTurno(data: Turno): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos`, data); }
   actualizarTurno(id: number, data: Turno): Observable<Turno> { return this.http.put<Turno>(`${this.api}/turnos/${id}`, data); }
   eliminarTurno(id: number): Observable<void> { return this.http.delete<void>(`${this.api}/turnos/${id}`); }
-  checkInTurno(id: number): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/check-in`, {}); }
-  cerrarTurno(id: number): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/cerrar`, {}); }
+  checkInTurno(id: number, codigoPin: string): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/check-in?codigoPin=${codigoPin}`, {}); }
+  cerrarTurno(id: number, calificacionLimpieza: number): Observable<Turno> { return this.http.post<Turno>(`${this.api}/turnos/${id}/cerrar?calificacionLimpieza=${calificacionLimpieza}`, {}); }
 
   incidentes(): Observable<Incidente[]> { return this.http.get<Incidente[]>(`${this.api}/incidentes`); }
   crearIncidente(data: Incidente): Observable<Incidente> { return this.http.post<Incidente>(`${this.api}/incidentes`, data); }
@@ -36,6 +40,7 @@ export class ApiService {
   eliminarIncidente(id: number): Observable<void> { return this.http.delete<void>(`${this.api}/incidentes/${id}`); }
 
   reasignaciones(): Observable<Reasignacion[]> { return this.http.get<Reasignacion[]>(`${this.api}/reasignaciones`); }
+  reasignacionesPendientesVigentes(): Observable<Reasignacion[]> { return this.http.get<Reasignacion[]>(`${this.api}/reasignaciones/pendientes-vigentes`); }
   crearReasignacion(data: Reasignacion): Observable<Reasignacion> { return this.http.post<Reasignacion>(`${this.api}/reasignaciones`, data); }
   actualizarReasignacion(id: number, data: Reasignacion): Observable<Reasignacion> { return this.http.put<Reasignacion>(`${this.api}/reasignaciones/${id}`, data); }
   eliminarReasignacion(id: number): Observable<void> { return this.http.delete<void>(`${this.api}/reasignaciones/${id}`); }

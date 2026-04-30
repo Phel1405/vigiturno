@@ -11,12 +11,12 @@ import { Meta, Notificacion, Usuario } from '../../core/models';
   template: `
     <section class="page-header">
       <div><h1>Notificaciones</h1><p>Recordatorios, alertas de ausencia y avisos operativos.</p></div>
-      <button class="secondary" (click)="nuevo()">Nueva notificación</button>
+      <button *ngIf="isAdmin()" class="secondary" (click)="nuevo()">Nueva notificación</button>
     </section>
 
     <div *ngIf="error" class="error">{{ error }}</div>
 
-    <section class="card">
+    <section class="card" *ngIf="isAdmin() && (editando || form.id === undefined)">
       <h2>{{ editando ? 'Editar notificación' : 'Crear notificación' }}</h2>
       <form class="form" (ngSubmit)="guardar()">
         <label>Tipo
@@ -51,8 +51,8 @@ import { Meta, Notificacion, Usuario } from '../../core/models';
             <td><span class="badge" [class.green]="item.leida" [class.yellow]="!item.leida">{{ item.leida ? 'Leída' : 'Pendiente' }}</span></td>
             <td>{{ item.mensaje }}</td>
             <td class="actions">
-              <button class="ghost" (click)="editar(item)">Editar</button>
-              <button class="danger" *ngIf="item.id" (click)="eliminar(item.id)">Eliminar</button>
+              <button class="ghost" *ngIf="isAdmin()" (click)="editar(item)">Editar</button>
+              <button class="danger" *ngIf="isAdmin() && item.id" (click)="eliminar(item.id)">Eliminar</button>
             </td>
           </tr>
         </tbody>
@@ -69,7 +69,23 @@ export class NotificacionesComponent implements OnInit {
   error = '';
   form: Notificacion = this.base();
 
-  constructor(private readonly api: ApiService) {}
+  usuarioIdActivo: number | null = null;
+  rolActivo: string = 'ADMINISTRADOR';
+
+  constructor(private readonly api: ApiService) {
+    const stored = localStorage.getItem('usuarioActivo');
+    if (stored) {
+      this.usuarioIdActivo = Number(stored);
+      this.api.usuarios().subscribe(us => {
+        const u = us.find(x => x.id === this.usuarioIdActivo);
+        if (u) this.rolActivo = u.rol;
+      });
+    }
+  }
+
+  isAdmin(): boolean {
+    return this.rolActivo !== 'DOCENTE';
+  }
 
   ngOnInit(): void {
     this.cargar();
@@ -77,7 +93,14 @@ export class NotificacionesComponent implements OnInit {
     this.api.meta().subscribe(meta => this.meta = meta);
   }
 
-  cargar(): void { this.api.notificaciones().subscribe({ next: data => this.notificaciones = data, error: () => this.error = 'No se pudieron cargar notificaciones.' }); }
+  cargar(): void { 
+    this.api.notificaciones().subscribe({ 
+      next: data => {
+        this.notificaciones = this.isAdmin() ? data : data.filter(n => n.usuarioId === this.usuarioIdActivo);
+      }, 
+      error: () => this.error = 'No se pudieron cargar notificaciones.' 
+    }); 
+  }
   nuevo(): void { this.editando = false; this.form = this.base(); }
   editar(item: Notificacion): void { this.editando = true; this.form = { ...item, fechaHora: this.normalizarFechaHora(item.fechaHora) }; }
 

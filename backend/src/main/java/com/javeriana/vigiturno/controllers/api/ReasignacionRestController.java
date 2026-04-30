@@ -42,6 +42,11 @@ public class ReasignacionRestController {
         return reasignacionService.listarTodas().stream().map(ApiMapper::toDto).toList();
     }
 
+    @GetMapping("/pendientes-vigentes")
+    public List<ReasignacionDto> listarPendientesVigentes() {
+        return reasignacionService.listarPendientesVigentes().stream().map(ApiMapper::toDto).toList();
+    }
+
     @GetMapping("/{id}")
     public ReasignacionDto buscar(@PathVariable Long id) {
         return reasignacionService.buscarPorId(id).map(ApiMapper::toDto)
@@ -64,6 +69,24 @@ public class ReasignacionRestController {
         return ApiMapper.toDto(reasignacionService.guardar(reasignacion));
     }
 
+    @PostMapping("/{id}/aceptar")
+    public ReasignacionDto aceptar(@PathVariable Long id) {
+        Reasignacion reasignacion = reasignacionService.buscarPorId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reasignación no encontrada con id: " + id));
+        reasignacion.setEstado(EstadoReasignacion.ACEPTADA);
+        reasignacion.setFechaHoraRespuesta(LocalDateTime.now());
+        return ApiMapper.toDto(reasignacionService.guardar(reasignacion));
+    }
+
+    @PostMapping("/{id}/rechazar")
+    public ReasignacionDto rechazar(@PathVariable Long id) {
+        Reasignacion reasignacion = reasignacionService.buscarPorId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reasignación no encontrada con id: " + id));
+        reasignacion.setEstado(EstadoReasignacion.RECHAZADA);
+        reasignacion.setFechaHoraRespuesta(LocalDateTime.now());
+        return ApiMapper.toDto(reasignacionService.guardar(reasignacion));
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {
@@ -73,14 +96,18 @@ public class ReasignacionRestController {
     }
 
     private void copiar(ReasignacionRequest request, Reasignacion reasignacion) {
+        var turno = turnoService.buscarPorId(request.turnoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + request.turnoId()));
+
         reasignacion.setMotivo(request.motivo());
         reasignacion.setFechaHoraSolicitud(request.fechaHoraSolicitud() != null ? request.fechaHoraSolicitud() : LocalDateTime.now());
         reasignacion.setFechaHoraRespuesta(request.fechaHoraRespuesta());
         reasignacion.setEstado(request.estado() != null ? request.estado() : EstadoReasignacion.PENDIENTE);
-        reasignacion.setTurno(turnoService.buscarPorId(request.turnoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + request.turnoId())));
-        reasignacion.setDocenteOriginal(usuarioService.buscarPorId(request.docenteOriginalId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.docenteOriginalId())));
+        reasignacion.setTurno(turno);
+
+        // Para evitar inconsistencias, el docente original siempre sale del turno.
+        reasignacion.setDocenteOriginal(turno.getUsuario());
+
         if (request.docenteReemplazoId() != null) {
             reasignacion.setDocenteReemplazo(usuarioService.buscarPorId(request.docenteReemplazoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.docenteReemplazoId())));

@@ -11,12 +11,12 @@ import { Meta, Turno, Usuario, Zona } from '../../core/models';
   template: `
     <section class="page-header">
       <div><h1>Turnos</h1><p>Calendario operativo con check-in y cierre de turno.</p></div>
-      <button class="secondary" (click)="nuevo()">Nuevo turno</button>
+      <button *ngIf="isAdmin()" class="secondary" (click)="nuevo()">Nuevo turno</button>
     </section>
 
     <div *ngIf="error" class="error">{{ error }}</div>
 
-    <section class="card">
+    <section class="card" *ngIf="isAdmin() && (editando || form.id === undefined)">
       <h2>{{ editando ? 'Editar turno' : 'Crear turno' }}</h2>
       <form class="form" (ngSubmit)="guardar()">
         <label>Fecha <input name="fecha" type="date" [(ngModel)]="form.fecha" required></label>
@@ -54,12 +54,35 @@ import { Meta, Turno, Usuario, Zona } from '../../core/models';
             <td>{{ turno.horaInicio }} - {{ turno.horaFin }}</td>
             <td>{{ turno.usuarioNombre }}</td>
             <td>{{ turno.zonaNombre }}</td>
-            <td><span class="badge" [class.green]="turno.estado === 'EN_CURSO'" [class.yellow]="turno.estado === 'PENDIENTE'">{{ turno.estado }}</span></td>
+            <td><span class="badge" [class.green]="(turno.estadoOperativo || turno.estado) === 'EN_CURSO'" [class.yellow]="(turno.estadoOperativo || turno.estado) === 'PENDIENTE'">{{ turno.estadoOperativo || turno.estado }}</span></td>
             <td class="actions">
-              <button class="success" *ngIf="turno.id" (click)="checkIn(turno.id)">Check-in</button>
-              <button class="warning" *ngIf="turno.id" (click)="cerrar(turno.id)">Cerrar</button>
-              <button class="ghost" (click)="editar(turno)">Editar</button>
-              <button class="danger" *ngIf="turno.id" (click)="eliminar(turno.id)">Eliminar</button>
+              <!-- Default Actions -->
+              <ng-container *ngIf="actionTurnoId !== turno.id">
+                <button class="success" *ngIf="turno.id && turno.puedeCheckIn && (!isAdmin() || isMiTurno(turno))" (click)="iniciarCheckIn(turno.id)">Check-in</button>
+                <button class="warning" *ngIf="turno.id && (turno.estadoOperativo || turno.estado) === 'EN_CURSO' && (!isAdmin() || isMiTurno(turno))" (click)="iniciarCerrar(turno.id)">Cerrar</button>
+                <button class="ghost" *ngIf="isAdmin()" (click)="editar(turno)">Editar</button>
+                <button class="danger" *ngIf="isAdmin() && turno.id" (click)="eliminar(turno.id)">Eliminar</button>
+              </ng-container>
+              
+              <!-- Check-In Form -->
+              <div *ngIf="actionTurnoId === turno.id && actionType === 'CHECK_IN'" style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="text" [(ngModel)]="actionValue" placeholder="PIN de Zona" style="width:100px; padding:0.25rem;">
+                <button class="success" (click)="confirmarCheckIn()">OK</button>
+                <button class="ghost" (click)="cancelarAccion()">x</button>
+              </div>
+
+              <!-- Cerrar Form -->
+              <div *ngIf="actionTurnoId === turno.id && actionType === 'CERRAR'" style="display:flex; gap:0.5rem; align-items:center;">
+                <select [(ngModel)]="actionValue" style="padding:0.25rem;">
+                  <option value="">Limpieza...</option>
+                  <option value="1">1 - Limpio</option>
+                  <option value="2">2 - Algo de basura</option>
+                  <option value="3">3 - Mucha basura</option>
+                  <option value="4">4 - Crítico</option>
+                </select>
+                <button class="warning" (click)="confirmarCerrar()">OK</button>
+                <button class="ghost" (click)="cancelarAccion()">x</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -77,7 +100,27 @@ export class TurnosComponent implements OnInit {
   error = '';
   form: Turno = this.base();
 
-  constructor(private readonly api: ApiService) {}
+  usuarioIdActivo: number | null = null;
+  rolActivo: string = 'ADMINISTRADOR';
+
+  constructor(private readonly api: ApiService) {
+    const stored = localStorage.getItem('usuarioActivo');
+    if (stored) {
+      this.usuarioIdActivo = Number(stored);
+      this.api.usuarios().subscribe(us => {
+        const u = us.find(x => x.id === this.usuarioIdActivo);
+        if (u) this.rolActivo = u.rol;
+      });
+    }
+  }
+
+  isAdmin(): boolean {
+    return this.rolActivo !== 'DOCENTE';
+  }
+
+  isMiTurno(turno: Turno): boolean {
+    return turno.usuarioId === this.usuarioIdActivo;
+  }
 
   ngOnInit(): void {
     this.cargar();
@@ -86,7 +129,14 @@ export class TurnosComponent implements OnInit {
     this.api.meta().subscribe(meta => this.meta = meta);
   }
 
-  cargar(): void { this.api.turnos().subscribe({ next: data => this.turnos = data, error: () => this.error = 'No se pudieron cargar turnos.' }); }
+  cargar(): void { 
+    this.api.turnosProximos(7).subscribe({ 
+      next: data => {
+        this.turnos = this.isAdmin() ? data : data.filter(t => t.usuarioId === this.usuarioIdActivo);
+      }, 
+      error: () => this.error = 'No se pudieron cargar turnos.' 
+    }); 
+  }
   nuevo(): void { this.editando = false; this.form = this.base(); }
   editar(turno: Turno): void { this.editando = true; this.form = { ...turno, horaInicio: this.normalizarHora(turno.horaInicio), horaFin: this.normalizarHora(turno.horaFin) }; }
 
@@ -96,8 +146,53 @@ export class TurnosComponent implements OnInit {
     request.subscribe({ next: () => { this.nuevo(); this.cargar(); }, error: () => this.error = 'No se pudo guardar el turno.' });
   }
 
-  checkIn(id: number): void { this.api.checkInTurno(id).subscribe({ next: () => this.cargar(), error: () => this.error = 'No se pudo registrar el check-in.' }); }
-  cerrar(id: number): void { this.api.cerrarTurno(id).subscribe({ next: () => this.cargar(), error: () => this.error = 'No se pudo cerrar el turno.' }); }
+  actionTurnoId: number | null = null;
+  actionType: 'CHECK_IN' | 'CERRAR' | null = null;
+  actionValue: string = '';
+
+  iniciarCheckIn(id: number): void {
+    this.actionTurnoId = id;
+    this.actionType = 'CHECK_IN';
+    this.actionValue = '';
+    this.error = '';
+  }
+
+  confirmarCheckIn(): void {
+    if (!this.actionTurnoId || !this.actionValue) {
+       this.error = 'Debe ingresar el PIN.';
+       return;
+    }
+    this.api.checkInTurno(this.actionTurnoId, this.actionValue).subscribe({ 
+      next: () => { this.cargar(); this.cancelarAccion(); }, 
+      error: (err) => this.error = err?.error?.message || 'No se pudo registrar el check-in. Verifica el PIN.' 
+    });
+  }
+  
+  iniciarCerrar(id: number): void {
+    this.actionTurnoId = id;
+    this.actionType = 'CERRAR';
+    this.actionValue = '';
+    this.error = '';
+  }
+
+  confirmarCerrar(): void {
+    const cal = Number(this.actionValue);
+    if (!this.actionTurnoId || isNaN(cal) || cal < 1 || cal > 4) {
+      this.error = 'Debe seleccionar una calificación válida (1 a 4).';
+      return;
+    }
+    this.api.cerrarTurno(this.actionTurnoId, cal).subscribe({ 
+      next: () => { this.cargar(); this.cancelarAccion(); }, 
+      error: (err) => this.error = err?.error?.message || 'No se pudo cerrar el turno.' 
+    });
+  }
+
+  cancelarAccion(): void {
+    this.actionTurnoId = null;
+    this.actionType = null;
+    this.actionValue = '';
+  }
+  
   eliminar(id: number): void { this.api.eliminarTurno(id).subscribe({ next: () => this.cargar(), error: () => this.error = 'No se pudo eliminar el turno.' }); }
 
   private normalizarHora(hora: string): string { return hora?.slice(0, 5) || '10:00'; }

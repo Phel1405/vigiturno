@@ -44,6 +44,15 @@ public class Turno {
     @Column(nullable = false, length = 20)
     private EstadoTurno estado;
 
+    @Column(name = "hora_inicio_real")
+    private LocalTime horaInicioReal;
+
+    @Column(name = "hora_fin_real")
+    private LocalTime horaFinReal;
+
+    @Column(name = "calificacion_limpieza")
+    private Integer calificacionLimpieza;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;

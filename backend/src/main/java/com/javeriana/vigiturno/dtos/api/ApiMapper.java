@@ -7,6 +7,7 @@ import com.javeriana.vigiturno.models.entities.Reasignacion;
 import com.javeriana.vigiturno.models.entities.Turno;
 import com.javeriana.vigiturno.models.entities.Usuario;
 import com.javeriana.vigiturno.models.entities.Zona;
+import com.javeriana.vigiturno.services.TurnoService;
 
 public final class ApiMapper {
     private ApiMapper() {}
@@ -29,11 +30,16 @@ public final class ApiMapper {
                 zona.getNombre(),
                 zona.getDescripcion(),
                 zona.getCapacidadMaxima(),
-                zona.getActiva()
+                zona.getActiva(),
+                zona.getCodigoPin()
         );
     }
 
     public static TurnoDto toDto(Turno turno) {
+        return toDto(turno, null);
+    }
+
+    public static TurnoDto toDto(Turno turno, TurnoService turnoService) {
         if (turno == null) return null;
         var usuario = turno.getUsuario();
         var zona = turno.getZona();
@@ -43,10 +49,17 @@ public final class ApiMapper {
                 turno.getHoraInicio(),
                 turno.getHoraFin(),
                 turno.getEstado(),
+                turnoService != null ? turnoService.calcularEstadoOperativo(turno) : turno.getEstado(),
+                turnoService != null ? turnoService.puedeHacerCheckIn(turno) : null,
+                turnoService != null ? turnoService.estaSinCobertura(turno) : null,
+                turnoService != null ? turnoService.puedeReasignarse(turno) : null,
                 usuario != null ? usuario.getId() : null,
                 usuario != null ? usuario.getNombreCompleto() : null,
                 zona != null ? zona.getId() : null,
-                zona != null ? zona.getNombre() : null
+                zona != null ? zona.getNombre() : null,
+                turno.getHoraInicioReal(),
+                turno.getHoraFinReal(),
+                turno.getCalificacionLimpieza()
         );
     }
 

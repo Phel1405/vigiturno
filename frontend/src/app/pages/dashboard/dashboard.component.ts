@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../core/api.service';
-import { Dashboard, HeatmapZona, Incidente, Turno } from '../../core/models';
+import { Dashboard, HeatmapZona, Incidente, Turno, Zona } from '../../core/models';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,27 @@ import { Dashboard, HeatmapZona, Incidente, Turno } from '../../core/models';
       <article class="card metric"><span>Incidentes</span><strong>{{ dashboard.totalIncidentes }}</strong></article>
       <article class="card metric"><span>Reasignaciones</span><strong>{{ dashboard.totalReasignaciones }}</strong></article>
       <article class="card metric"><span>Notificaciones</span><strong>{{ dashboard.totalNotificaciones }}</strong></article>
+    </section>
+
+    <section class="card" *ngIf="isAdmin()" style="margin-top:16px;">
+      <h2>Mapa Operativo de Zonas</h2>
+      <p>Estado en tiempo real de las zonas según los turnos de hoy.</p>
+      <div class="grid cols-4" style="margin-top:1rem;">
+        <article *ngFor="let mz of mapaZonas" class="card" 
+                 [ngStyle]="{'border-left': '4px solid ' + mz.color}">
+          <h3 style="margin-top: 0;">{{ mz.zona.nombre }}</h3>
+          <p style="margin: 0; font-size: 0.9rem; color: #666;">
+            <strong>Estado:</strong> {{ mz.estadoStr }}
+          </p>
+          <p *ngIf="mz.turno" style="margin: 0; font-size: 0.8rem; color: #888;">
+            Turno: {{ mz.turno.horaInicio }} - {{ mz.turno.horaFin }} <br>
+            Docente: {{ mz.turno.usuarioNombre }}
+          </p>
+          <p *ngIf="!mz.turno" style="margin: 0; font-size: 0.8rem; color: #888;">
+            No hay turno asignado para esta hora.
+          </p>
+        </article>
+      </div>
     </section>
 
     <section class="grid cols-2" style="margin-top:16px">
@@ -79,7 +101,25 @@ export class DashboardComponent implements OnInit {
   turnos: Turno[] = [];
   error = '';
 
-  constructor(private readonly api: ApiService) {}
+  mapaZonas: {zona: Zona, color: string, estadoStr: string, turno?: Turno}[] = [];
+  
+  usuarioIdActivo: number | null = null;
+  rolActivo: string = 'ADMINISTRADOR';
+
+  constructor(private readonly api: ApiService) {
+    const stored = localStorage.getItem('usuarioActivo');
+    if (stored) {
+      this.usuarioIdActivo = Number(stored);
+      this.api.usuarios().subscribe(us => {
+        const u = us.find(x => x.id === this.usuarioIdActivo);
+        if (u) this.rolActivo = u.rol;
+      });
+    }
+  }
+
+  isAdmin(): boolean {
+    return this.rolActivo !== 'DOCENTE';
+  }
 
   ngOnInit(): void { this.cargar(); }
 
@@ -88,6 +128,54 @@ export class DashboardComponent implements OnInit {
     this.api.dashboard().subscribe({ next: data => this.dashboard = data, error: () => this.error = 'No se pudo cargar el dashboard. Revisa que Spring Boot esté corriendo en el puerto 8080.' });
     this.api.mapaCalor().subscribe({ next: data => this.heatmap = data });
     this.api.incidentes().subscribe({ next: data => this.incidentes = data });
-    this.api.turnos().subscribe({ next: data => this.turnos = data });
+    this.api.turnos().subscribe({ next: data => {
+       this.turnos = this.isAdmin() ? data : data.filter(t => t.usuarioId === this.usuarioIdActivo);
+    }});
+    
+    if (this.isAdmin()) {
+      forkJoin({
+        zonas: this.api.zonas(),
+        turnosHoy: this.api.turnosHoy()
+      }).subscribe(({zonas, turnosHoy}) => {
+        this.calcularMapaZonas(zonas, turnosHoy);
+      });
+    }
+  }
+
+  private calcularMapaZonas(zonas: Zona[], turnosHoy: Turno[]) {
+    const ahoraStr = new Date().toTimeString().slice(0, 5); // "HH:MM"
+    
+    this.mapaZonas = zonas.map(zona => {
+      const turnosDeZona = turnosHoy.filter(t => t.zonaId === zona.id);
+      
+      // Find current or next shift
+      let turnoActivo = turnosDeZona.find(t => t.horaInicio <= ahoraStr && t.horaFin >= ahoraStr);
+      if (!turnoActivo) {
+         // Find next shift today
+         turnoActivo = turnosDeZona.filter(t => t.horaInicio > ahoraStr).sort((a,b) => a.horaInicio.localeCompare(b.horaInicio))[0];
+      }
+
+      let color = '#ccc'; // Gris (sin turno asignado)
+      let estadoStr = 'Sin cobertura actualmente';
+      
+      if (turnoActivo) {
+         const estadoOp = turnoActivo.estadoOperativo || turnoActivo.estado;
+         if (turnoActivo.sinCobertura) {
+             color = '#e74c3c'; // Rojo
+             estadoStr = 'Sin cobertura (Umbral superado)';
+         } else if (estadoOp === 'EN_CURSO') {
+             color = '#2ecc71'; // Verde
+             estadoStr = 'Cubierta (Turno iniciado)';
+         } else if (estadoOp === 'PENDIENTE') {
+             color = '#f1c40f'; // Amarillo
+             estadoStr = 'Turno próximo o esperando inicio';
+         } else if (estadoOp === 'FINALIZADO' || estadoOp === 'CANCELADO') {
+             color = '#ccc';
+             estadoStr = 'Turno finalizado/cancelado';
+         }
+      }
+
+      return { zona, color, estadoStr, turno: turnoActivo };
+    });
   }
 }

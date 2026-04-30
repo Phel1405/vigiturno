@@ -2,6 +2,7 @@ package com.javeriana.vigiturno.controllers.api;
 
 import com.javeriana.vigiturno.dtos.api.ApiDtos.TurnoDto;
 import com.javeriana.vigiturno.dtos.api.ApiDtos.TurnoRequest;
+import com.javeriana.vigiturno.dtos.api.ApiDtos.UsuarioDto;
 import com.javeriana.vigiturno.dtos.api.ApiMapper;
 import com.javeriana.vigiturno.exceptions.ResourceNotFoundException;
 import com.javeriana.vigiturno.models.entities.Turno;
@@ -40,13 +41,45 @@ public class TurnoRestController {
     @GetMapping
     public List<TurnoDto> listar(@RequestParam(value = "usuarioId", required = false) Long usuarioId) {
         var turnos = usuarioId == null ? turnoService.listarTodos() : turnoService.listarPorUsuarioId(usuarioId);
-        return turnos.stream().map(ApiMapper::toDto).toList();
+        return turnos.stream().map(turno -> ApiMapper.toDto(turno, turnoService)).toList();
+    }
+
+    @GetMapping("/hoy")
+    public List<TurnoDto> listarHoy() {
+        return turnoService.listarDeHoy().stream().map(turno -> ApiMapper.toDto(turno, turnoService)).toList();
+    }
+
+    @GetMapping("/proximos")
+    public List<TurnoDto> listarProximos(@RequestParam(value = "dias", defaultValue = "7") int dias) {
+        return turnoService.listarProximos(dias).stream().map(turno -> ApiMapper.toDto(turno, turnoService)).toList();
+    }
+
+    @GetMapping("/activos")
+    public List<TurnoDto> listarActivosAhora() {
+        return turnoService.listarActivosAhora().stream().map(turno -> ApiMapper.toDto(turno, turnoService)).toList();
+    }
+
+    @GetMapping("/sin-cobertura")
+    public List<TurnoDto> listarSinCobertura() {
+        return turnoService.listarSinCobertura().stream().map(turno -> ApiMapper.toDto(turno, turnoService)).toList();
+    }
+
+    @GetMapping("/reasignables")
+    public List<TurnoDto> listarReasignables() {
+        return turnoService.listarReasignables().stream().map(turno -> ApiMapper.toDto(turno, turnoService)).toList();
     }
 
     @GetMapping("/{id}")
     public TurnoDto buscar(@PathVariable Long id) {
-        return turnoService.buscarPorId(id).map(ApiMapper::toDto)
+        return turnoService.buscarPorId(id).map(turno -> ApiMapper.toDto(turno, turnoService))
                 .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + id));
+    }
+
+    @GetMapping("/{id}/docentes-disponibles")
+    public List<UsuarioDto> docentesDisponibles(@PathVariable Long id) {
+        Turno turno = turnoService.buscarPorId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + id));
+        return turnoService.proponerDocentesDisponibles(turno).stream().map(ApiMapper::toDto).toList();
     }
 
     @PostMapping
@@ -54,7 +87,7 @@ public class TurnoRestController {
     public TurnoDto crear(@Valid @RequestBody TurnoRequest request) {
         Turno turno = new Turno();
         copiar(request, turno);
-        return ApiMapper.toDto(turnoService.guardar(turno));
+        return ApiMapper.toDto(turnoService.guardar(turno), turnoService);
     }
 
     @PutMapping("/{id}")
@@ -62,23 +95,21 @@ public class TurnoRestController {
         Turno turno = turnoService.buscarPorId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + id));
         copiar(request, turno);
-        return ApiMapper.toDto(turnoService.guardar(turno));
+        return ApiMapper.toDto(turnoService.guardar(turno), turnoService);
     }
 
     @PostMapping("/{id}/check-in")
-    public TurnoDto checkIn(@PathVariable Long id) {
+    public TurnoDto checkIn(@PathVariable Long id, @RequestParam("codigoPin") String codigoPin) {
         Turno turno = turnoService.buscarPorId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + id));
-        turno.setEstado(EstadoTurno.EN_CURSO);
-        return ApiMapper.toDto(turnoService.guardar(turno));
+        return ApiMapper.toDto(turnoService.registrarCheckIn(turno, codigoPin), turnoService);
     }
 
     @PostMapping("/{id}/cerrar")
-    public TurnoDto cerrar(@PathVariable Long id) {
+    public TurnoDto cerrar(@PathVariable Long id, @RequestParam("calificacionLimpieza") Integer calificacionLimpieza) {
         Turno turno = turnoService.buscarPorId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Turno no encontrado con id: " + id));
-        turno.setEstado(EstadoTurno.FINALIZADO);
-        return ApiMapper.toDto(turnoService.guardar(turno));
+        return ApiMapper.toDto(turnoService.cerrarTurno(turno, calificacionLimpieza), turnoService);
     }
 
     @DeleteMapping("/{id}")

@@ -17,8 +17,8 @@ public final class ApiDtos {
     public record UsuarioDto(Long id, String nombreCompleto, String correo, RolNombre rol, Boolean activo) {}
     public record UsuarioRequest(String nombreCompleto, String correo, String password, RolNombre rol, Boolean activo) {}
 
-    public record ZonaDto(Long id, String nombre, String descripcion, Integer capacidadMaxima, Boolean activa) {}
-    public record ZonaRequest(String nombre, String descripcion, Integer capacidadMaxima, Boolean activa) {}
+    public record ZonaDto(Long id, String nombre, String descripcion, Integer capacidadMaxima, Boolean activa, String codigoPin) {}
+    public record ZonaRequest(String nombre, String descripcion, Integer capacidadMaxima, Boolean activa, String codigoPin) {}
 
     public record TurnoDto(
             Long id,
@@ -26,12 +26,19 @@ public final class ApiDtos {
             LocalTime horaInicio,
             LocalTime horaFin,
             EstadoTurno estado,
+            EstadoTurno estadoOperativo,
+            Boolean puedeCheckIn,
+            Boolean sinCobertura,
+            Boolean puedeReasignar,
             Long usuarioId,
             String usuarioNombre,
             Long zonaId,
-            String zonaNombre
+            String zonaNombre,
+            LocalTime horaInicioReal,
+            LocalTime horaFinReal,
+            Integer calificacionLimpieza
     ) {}
-    public record TurnoRequest(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, EstadoTurno estado, Long usuarioId, Long zonaId) {}
+    public record TurnoRequest(LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, EstadoTurno estado, Long usuarioId, Long zonaId, LocalTime horaInicioReal, LocalTime horaFinReal, Integer calificacionLimpieza) {}
 
     public record IncidenteDto(
             Long id,

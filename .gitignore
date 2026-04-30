@@ -1,6 +1,7 @@
 # Angular
 **/node_modules/
 **/dist/
+**/.angular/
 
 # Java / Spring
 **/target/
@@ -11,3 +12,5 @@
 # Otros
 .DS_Store
 .vscode/
+.idea/
+**/shell.nix
