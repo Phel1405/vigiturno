@@ -258,7 +258,15 @@ public class SeedDataRunner implements CommandLineRunner {
                 .usuario(coordinador)
                 .build();
 
-        notificacionRepository.saveAll(List.of(notificacion1, notificacion2));
+        Notificacion alertaIncidenteS3 = Notificacion.builder()
+                .tipo(TipoNotificacion.ALERTA_CRITICA)
+                .mensaje("¡URGENTE! Incidente S3 en " + cancha.getNombre() + ": Estudiante requiere atención inmediata. Ver detalles en el módulo de incidentes.")
+                .fechaHora(LocalDateTime.now())
+                .leida(false)
+                .usuario(coordinador)
+                .build();
+
+        notificacionRepository.saveAll(List.of(notificacion1, notificacion2, alertaIncidenteS3));
 
         Reasignacion reasignacion = Reasignacion.builder()
                 .motivo("Docente original reporta reunión institucional inesperada.")
