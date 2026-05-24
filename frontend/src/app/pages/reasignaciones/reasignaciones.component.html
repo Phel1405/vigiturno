@@ -1,0 +1,68 @@
+<section class="page-header">
+    <div><h1>Reasignaciones</h1><p>Solicitud de reemplazos con trazabilidad del proceso.</p></div>
+    <button class="secondary" (click)="nuevo()">Nueva reasignación</button>
+</section>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<section class="card">
+    <h2>{{ editando ? 'Editar reasignación' : 'Crear reasignación' }}</h2>
+    <form class="form" (ngSubmit)="guardar()">
+        <label *ngIf="isAdmin()">Turno
+            <select name="turnoId" [(ngModel)]="form.turnoId" required>
+                <option *ngFor="let turno of turnos" [ngValue]="turno.id">{{ turno.fecha }} · {{ turno.horaInicio }}-{{ turno.horaFin }} · {{ turno.usuarioNombre }} · {{ turno.zonaNombre }}</option>
+            </select>
+        </label>
+        <label *ngIf="!isAdmin()">Mis Turnos
+            <select name="turnoId" [(ngModel)]="form.turnoId" required>
+                <option *ngFor="let turno of misTurnos" [ngValue]="turno.id">{{ turno.fecha }} · {{ turno.horaInicio }}-{{ turno.horaFin }} · {{ turno.zonaNombre }}</option>
+            </select>
+        </label>
+        <ng-container *ngIf="isAdmin()">
+            <label>Estado
+                <select name="estado" [(ngModel)]="form.estado" required>
+                    <option *ngFor="let estado of meta?.estadosReasignacion" [ngValue]="estado">{{ estado }}</option>
+                </select>
+            </label>
+            <label>Docente original
+                <select name="docenteOriginalId" [(ngModel)]="form.docenteOriginalId" required>
+                    <option *ngFor="let usuario of usuarios" [ngValue]="usuario.id">{{ usuario.nombreCompleto }} — {{ usuario.rol }}</option>
+                </select>
+            </label>
+            <label>Docente reemplazo
+                <select name="docenteReemplazoId" [(ngModel)]="form.docenteReemplazoId">
+                    <option [ngValue]="null">Pendiente</option>
+                    <option *ngFor="let usuario of usuarios" [ngValue]="usuario.id">{{ usuario.nombreCompleto }} — {{ usuario.rol }}</option>
+                </select>
+            </label>
+            <label>Solicitud <input name="fechaHoraSolicitud" type="datetime-local" [(ngModel)]="form.fechaHoraSolicitud" required></label>
+            <label>Respuesta <input name="fechaHoraRespuesta" type="datetime-local" [(ngModel)]="form.fechaHoraRespuesta"></label>
+        </ng-container>
+        <label class="full">Motivo <textarea name="motivo" [(ngModel)]="form.motivo" required></textarea></label>
+        <div class="actions full">
+            <button type="submit">{{ editando ? 'Guardar cambios' : 'Crear' }}</button>
+            <button class="ghost" type="button" (click)="nuevo()">Limpiar</button>
+        </div>
+    </form>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h2>Solicitudes</h2>
+    <table *ngIf="reasignaciones.length > 0; else empty">
+        <thead><tr><th>Turno</th><th>Original</th><th>Reemplazo</th><th>Estado</th><th>Motivo</th><th>Acciones</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let item of reasignaciones">
+            <td>#{{ item.turnoId }}</td>
+            <td>{{ item.docenteOriginalNombre }}</td>
+            <td>{{ item.docenteReemplazoNombre || 'Pendiente' }}</td>
+            <td><span class="badge" [class.green]="item.estado === 'ACEPTADA'" [class.red]="item.estado === 'RECHAZADA'" [class.yellow]="item.estado === 'PENDIENTE'">{{ item.estado }}</span></td>
+            <td>{{ item.motivo }}</td>
+            <td class="actions">
+                <button class="ghost" *ngIf="isAdmin()" (click)="editar(item)">Gestionar</button>
+                <button class="danger" *ngIf="isAdmin() && item.id" (click)="eliminar(item.id)">Eliminar</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <ng-template #empty><p class="empty">No hay reasignaciones.</p></ng-template>
+</section>

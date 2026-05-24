@@ -8,39 +8,7 @@ import { Usuario } from '../../core/models';
   selector: 'app-home',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <section class="page-header" style="text-align: center; display: block; margin-bottom: 2rem;">
-      <h1>Bienvenido a VigiTurno</h1>
-      <p>Selecciona tu rol para ingresar al sistema.</p>
-    </section>
-
-    <div class="grid cols-3" *ngIf="paso === 'ROL'">
-      <article class="card" style="text-align: center; cursor: pointer; transition: transform 0.2s;" (click)="seleccionarRol('DOCENTE')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        <h2>Entrar como Docente</h2>
-        <p>Inicia tus turnos, registra limpieza y reporta incidentes.</p>
-      </article>
-
-      <article class="card" style="text-align: center; cursor: pointer; transition: transform 0.2s;" (click)="seleccionarRol('COORDINADOR')" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        <h2>Entrar como Coordinador</h2>
-        <p>Revisa el mapa de zonas y gestiona reasignaciones e incidentes.</p>
-      </article>
-
-      <article class="card" style="text-align: center; cursor: pointer; transition: transform 0.2s;" (click)="entrarAdmin()" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-        <h2>Entrar como Administrador</h2>
-        <p>Gestión global de usuarios, zonas, turnos y dashboard central.</p>
-      </article>
-    </div>
-
-    <section class="card" *ngIf="paso === 'USUARIO'" style="max-width: 500px; margin: 0 auto;">
-      <h2>Selecciona tu usuario ({{ rolSeleccionado }})</h2>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
-        <button class="ghost" *ngFor="let u of usuariosFiltrados" (click)="entrar(u.id)" style="text-align: left; justify-content: flex-start;">
-          {{ u.nombreCompleto }}
-        </button>
-      </div>
-      <button class="secondary" style="margin-top: 1rem; width: 100%;" (click)="paso = 'ROL'">Volver</button>
-    </section>
-  `
+  templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnInit {
   paso: 'ROL' | 'USUARIO' = 'ROL';

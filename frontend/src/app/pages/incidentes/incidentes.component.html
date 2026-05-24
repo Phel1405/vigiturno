@@ -1,0 +1,70 @@
+<section class="page-header">
+    <div><h1>Incidentes</h1><p>Registro rápido en máximo tres pasos: tipo, severidad y ubicación.</p></div>
+    <button class="secondary" (click)="nuevo()">Nuevo incidente</button>
+</section>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<section class="card">
+    <h2>{{ editando ? 'Editar incidente' : 'Registrar incidente' }}</h2>
+    <form class="form" (ngSubmit)="guardar()">
+        <label>Tipo
+            <select name="tipo" [(ngModel)]="form.tipo" required>
+                <option *ngFor="let tipo of meta?.tiposIncidente" [ngValue]="tipo">{{ tipo }}</option>
+            </select>
+        </label>
+        <label>Severidad
+            <select name="severidad" [(ngModel)]="form.severidad" required>
+                <option *ngFor="let severidad of meta?.severidadesIncidente" [ngValue]="severidad">{{ severidad }}</option>
+            </select>
+        </label>
+        <label>Fecha y hora <input name="fechaHora" type="datetime-local" [(ngModel)]="form.fechaHora" required></label>
+        <ng-container *ngIf="isAdmin()">
+            <label>Turno asociado
+                <select name="turnoId" [(ngModel)]="form.turnoId">
+                    <option [ngValue]="null">Sin turno específico</option>
+                    <option *ngFor="let turno of turnos" [ngValue]="turno.id">{{ turno.fecha }} · {{ turno.usuarioNombre }} · {{ turno.zonaNombre }}</option>
+                </select>
+            </label>
+            <label>Zona manual
+                <select name="zonaId" [(ngModel)]="form.zonaId">
+                    <option [ngValue]="null">Usar zona del turno</option>
+                    <option *ngFor="let zona of zonas" [ngValue]="zona.id">{{ zona.nombre }}</option>
+                </select>
+            </label>
+        </ng-container>
+        <ng-container *ngIf="!isAdmin()">
+            <div style="padding: 1rem; background: #f0f4f8; margin-bottom: 1rem; border-radius: 4px;">
+                <strong>Turno Automático:</strong> El incidente se asociará a tu turno activo o al último turno si estás en la ventana de cierre.
+            </div>
+        </ng-container>
+        <label>Nombre estudiante <input name="nombreEstudiante" [(ngModel)]="form.nombreEstudiante" placeholder="Solo si aplica"></label>
+        <label>Curso estudiante <input name="cursoEstudiante" [(ngModel)]="form.cursoEstudiante" placeholder="Ej. 7B"></label>
+        <label class="full">Descripción <textarea name="descripcion" [(ngModel)]="form.descripcion" required></textarea></label>
+        <div class="actions full">
+            <button type="submit">{{ editando ? 'Guardar cambios' : 'Registrar' }}</button>
+            <button class="ghost" type="button" (click)="nuevo()">Limpiar</button>
+        </div>
+    </form>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h2>Historial</h2>
+    <table *ngIf="incidentes.length > 0; else empty">
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Severidad</th><th>Zona</th><th>Descripción</th><th>Acciones</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let incidente of incidentes">
+            <td>{{ incidente.fechaHora }}</td>
+            <td>{{ incidente.tipo }}</td>
+            <td><span class="badge" [class.red]="incidente.severidad === 'S3'" [class.yellow]="incidente.severidad === 'S2'">{{ incidente.severidad }}</span></td>
+            <td>{{ incidente.zonaNombre || incidente.zonaId || '—' }}</td>
+            <td>{{ incidente.descripcion }}</td>
+            <td class="actions">
+                <button class="ghost" (click)="editar(incidente)">Editar</button>
+                <button class="danger" *ngIf="incidente.id" (click)="eliminar(incidente.id)">Eliminar</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <ng-template #empty><p class="empty">No hay incidentes.</p></ng-template>
+</section>
