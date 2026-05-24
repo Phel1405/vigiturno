@@ -8,54 +8,7 @@ import { Meta, Usuario } from '../../core/models';
   selector: 'app-usuarios',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <section class="page-header">
-      <div><h1>Usuarios</h1><p>CRUD de docentes, coordinadores y administradores.</p></div>
-      <button class="secondary" (click)="nuevo()">Nuevo usuario</button>
-    </section>
-
-    <div *ngIf="error" class="error">{{ error }}</div>
-
-    <section class="grid cols-2">
-      <article class="card">
-        <h2>{{ editando ? 'Editar usuario' : 'Crear usuario' }}</h2>
-        <form class="form" (ngSubmit)="guardar()">
-          <label>Nombre completo <input name="nombreCompleto" [(ngModel)]="form.nombreCompleto" required></label>
-          <label>Correo <input name="correo" type="email" [(ngModel)]="form.correo" required></label>
-          <label>Password demo <input name="password" [(ngModel)]="form.password" placeholder="123456"></label>
-          <label>Rol
-            <select name="rol" [(ngModel)]="form.rol" required>
-              <option *ngFor="let rol of meta?.roles" [ngValue]="rol">{{ rol }}</option>
-            </select>
-          </label>
-          <label><span>Activo</span><select name="activo" [(ngModel)]="form.activo"><option [ngValue]="true">Sí</option><option [ngValue]="false">No</option></select></label>
-          <div class="actions full">
-            <button type="submit">{{ editando ? 'Guardar cambios' : 'Crear' }}</button>
-            <button class="ghost" type="button" (click)="nuevo()">Limpiar</button>
-          </div>
-        </form>
-      </article>
-
-      <article class="card">
-        <h2>Usuarios registrados</h2>
-        <table *ngIf="usuarios.length > 0; else empty">
-          <thead><tr><th>Nombre</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let usuario of usuarios">
-              <td><strong>{{ usuario.nombreCompleto }}</strong><br><small>{{ usuario.correo }}</small></td>
-              <td><span class="badge">{{ usuario.rol }}</span></td>
-              <td><span class="badge" [class.green]="usuario.activo" [class.red]="!usuario.activo">{{ usuario.activo ? 'Activo' : 'Inactivo' }}</span></td>
-              <td class="actions">
-                <button class="ghost" (click)="editar(usuario)">Editar</button>
-                <button class="danger" *ngIf="usuario.id" (click)="eliminar(usuario.id)">Eliminar</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <ng-template #empty><p class="empty">No hay usuarios.</p></ng-template>
-      </article>
-    </section>
-  `
+  templateUrl: './usuarios.component.html'
 })
 export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];

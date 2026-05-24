@@ -1,0 +1,100 @@
+<section class="page-header">
+    <div>
+        <h1>Dashboard operativo</h1>
+        <p>Resumen en vivo para mejor vigilancia.</p>
+    </div>
+    <button class="secondary" (click)="cargar()">Actualizar</button>
+</section>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<section class="grid cols-3" *ngIf="dashboard">
+    <article class="card metric"><span>Usuarios</span><strong>{{ dashboard.totalUsuarios }}</strong></article>
+    <article class="card metric"><span>Zonas</span><strong>{{ dashboard.totalZonas }}</strong></article>
+    <article class="card metric"><span>Turnos</span><strong>{{ dashboard.totalTurnos }}</strong></article>
+    <article class="card metric"><span>Incidentes</span><strong>{{ dashboard.totalIncidentes }}</strong></article>
+    <article class="card metric"><span>Reasignaciones</span><strong>{{ dashboard.totalReasignaciones }}</strong></article>
+    <article class="card metric"><span>Notificaciones</span><strong>{{ dashboard.totalNotificaciones }}</strong></article>
+</section>
+
+<section class="card" *ngIf="isAdmin()" style="margin-top:16px;">
+    <h2>Mapa Operativo de Zonas</h2>
+    <p>Estado en tiempo real de las zonas según los turnos de hoy.</p>
+    <div class="grid cols-4" style="margin-top:1rem;">
+        <article *ngFor="let mz of mapaZonas" class="card"
+                 [ngStyle]="{'border-left': '4px solid ' + mz.color}">
+            <h3 style="margin-top: 0;">{{ mz.zona.nombre }}</h3>
+            <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                <strong>Estado:</strong> {{ mz.estadoStr }}
+            </p>
+            <p *ngIf="mz.turno" style="margin: 0; font-size: 0.8rem; color: #888;">
+                Turno: {{ mz.turno.horaInicio }} - {{ mz.turno.horaFin }} <br>
+                Docente: {{ mz.turno.usuarioNombre }}
+            </p>
+            <p *ngIf="!mz.turno" style="margin: 0; font-size: 0.8rem; color: #888;">
+                No hay turno asignado para esta hora.
+            </p>
+        </article>
+    </div>
+</section>
+
+<section class="card" *ngIf="isAdmin()" style="margin-top:16px;">
+    <h2>Mapa de Limpieza de Zonas (Hoy)</h2>
+    <p>Último reporte de limpieza registrado en cada zona.</p>
+    <div class="grid cols-4" style="margin-top:1rem;">
+        <article *ngFor="let mz of mapaLimpieza" class="card"
+                 [ngStyle]="{'border-left': '4px solid ' + mz.color}">
+            <h3 style="margin-top: 0;">{{ mz.zona.nombre }}</h3>
+            <p style="margin: 0; font-size: 0.9rem;">
+                Calificación: <strong>{{ mz.calificacionStr }}</strong>
+            </p>
+            <p *ngIf="mz.turno" style="margin: 0; font-size: 0.8rem; color: #888;">
+                Registrada a las {{ mz.turno.horaFinReal || mz.turno.horaFin }} por {{ mz.turno.usuarioNombre }}
+            </p>
+        </article>
+    </div>
+</section>
+
+<section class="grid cols-2" style="margin-top:16px">
+    <article class="card">
+        <h2>Mapa de calor por zona</h2>
+        <p class="empty" *ngIf="heatmap.length === 0">Sin datos de incidentes todavía.</p>
+        <div class="heat-row" *ngFor="let zona of heatmap">
+            <strong>{{ zona.zonaNombre }}</strong>
+            <div class="bar"><span [style.width.%]="zona.porcentaje"></span></div>
+            <span>{{ zona.porcentaje }}%</span>
+        </div>
+    </article>
+
+    <article class="card">
+        <h2>Últimos incidentes</h2>
+        <table *ngIf="incidentes.length > 0; else emptyIncidentes">
+            <thead><tr><th>Tipo</th><th>Zona</th><th>Severidad</th></tr></thead>
+            <tbody>
+            <tr *ngFor="let item of incidentes.slice(0, 6)">
+                <td>{{ item.tipo }}</td>
+                <td>{{ item.zonaNombre || '—' }}</td>
+                <td><span class="badge" [class.red]="item.severidad === 'S3'" [class.yellow]="item.severidad === 'S2'">{{ item.severidad }}</span></td>
+            </tr>
+            </tbody>
+        </table>
+        <ng-template #emptyIncidentes><p class="empty">Aún no hay incidentes registrados.</p></ng-template>
+    </article>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h2>Turnos recientes</h2>
+    <table *ngIf="turnos.length > 0; else emptyTurnos">
+        <thead><tr><th>Fecha</th><th>Horario</th><th>Docente</th><th>Zona</th><th>Estado</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let turno of turnos.slice(0, 8)">
+            <td>{{ turno.fecha }}</td>
+            <td>{{ turno.horaInicio }} - {{ turno.horaFin }}</td>
+            <td>{{ turno.usuarioNombre }}</td>
+            <td>{{ turno.zonaNombre }}</td>
+            <td><span class="badge" [class.green]="turno.estado === 'EN_CURSO'" [class.yellow]="turno.estado === 'PENDIENTE'">{{ turno.estado }}</span></td>
+        </tr>
+        </tbody>
+    </table>
+    <ng-template #emptyTurnos><p class="empty">Aún no hay turnos creados.</p></ng-template>
+</section>

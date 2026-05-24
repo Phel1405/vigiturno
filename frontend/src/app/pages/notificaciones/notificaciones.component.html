@@ -1,0 +1,50 @@
+<section class="page-header">
+    <div><h1>Notificaciones</h1><p>Recordatorios, alertas de ausencia y avisos operativos.</p></div>
+    <button *ngIf="isAdmin()" class="secondary" (click)="nuevo()">Nueva notificación</button>
+</section>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<section class="card" *ngIf="isAdmin() && (editando || form.id === undefined)">
+    <h2>{{ editando ? 'Editar notificación' : 'Crear notificación' }}</h2>
+    <form class="form" (ngSubmit)="guardar()">
+        <label>Tipo
+            <select name="tipo" [(ngModel)]="form.tipo" required>
+                <option *ngFor="let tipo of meta?.tiposNotificacion" [ngValue]="tipo">{{ tipo }}</option>
+            </select>
+        </label>
+        <label>Usuario
+            <select name="usuarioId" [(ngModel)]="form.usuarioId" required>
+                <option *ngFor="let usuario of usuarios" [ngValue]="usuario.id">{{ usuario.nombreCompleto }} — {{ usuario.rol }}</option>
+            </select>
+        </label>
+        <label>Fecha y hora <input name="fechaHora" type="datetime-local" [(ngModel)]="form.fechaHora" required></label>
+        <label><span>Leída</span><select name="leida" [(ngModel)]="form.leida"><option [ngValue]="false">No</option><option [ngValue]="true">Sí</option></select></label>
+        <label class="full">Mensaje <textarea name="mensaje" [(ngModel)]="form.mensaje" required></textarea></label>
+        <div class="actions full">
+            <button type="submit">{{ editando ? 'Guardar cambios' : 'Crear' }}</button>
+            <button class="ghost" type="button" (click)="nuevo()">Limpiar</button>
+        </div>
+    </form>
+</section>
+
+<section class="card" style="margin-top:16px">
+    <h2>Listado</h2>
+    <table *ngIf="notificaciones.length > 0; else empty">
+        <thead><tr><th>Fecha</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Mensaje</th><th>Acciones</th></tr></thead>
+        <tbody>
+        <tr *ngFor="let item of notificaciones">
+            <td>{{ item.fechaHora }}</td>
+            <td>{{ item.usuarioNombre }}</td>
+            <td>{{ item.tipo }}</td>
+            <td><span class="badge" [class.green]="item.leida" [class.yellow]="!item.leida">{{ item.leida ? 'Leída' : 'Pendiente' }}</span></td>
+            <td>{{ item.mensaje }}</td>
+            <td class="actions">
+                <button class="ghost" *ngIf="isAdmin()" (click)="editar(item)">Editar</button>
+                <button class="danger" *ngIf="isAdmin() && item.id" (click)="eliminar(item.id)">Eliminar</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <ng-template #empty><p class="empty">No hay notificaciones.</p></ng-template>
+</section>
