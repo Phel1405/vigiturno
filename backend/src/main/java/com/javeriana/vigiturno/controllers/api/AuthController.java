@@ -31,7 +31,6 @@ public class AuthController {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final GoogleTokenService googleTokenService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
@@ -76,54 +75,4 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiMapper.toDto(saved));
     }
 
-    @PostMapping("/google")
-    public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest request) {
-        GoogleUserInfo googleUser;
-        try {
-            googleUser = googleTokenService.verifyIdToken(request.idToken());
-        } catch (IllegalStateException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-        }
-
-        Usuario usuario = usuarioRepository.findByCorreo(googleUser.email()).orElse(null);
-
-        if (usuario == null) {
-            usuario = new Usuario();
-            usuario.setNombreCompleto(resolveName(googleUser));
-            usuario.setCorreo(googleUser.email());
-            usuario.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-            usuario.setRol(RolNombre.DOCENTE);
-            usuario.setActivo(true);
-        }
-
-        if (!usuario.getActivo()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("La cuenta de usuario de Google está deshabilitada");
-        }
-
-        usuario.setProvider("GOOGLE");
-        usuario.setProviderId(googleUser.providerId());
-        usuario.setPictureUrl(googleUser.pictureUrl());
-        usuario = usuarioRepository.save(usuario);
-
-        String token = jwtTokenProvider.generateToken(usuario);
-        LoginResponse response = new LoginResponse(
-                token,
-                usuario.getCorreo(),
-                usuario.getNombreCompleto(),
-                usuario.getRol(),
-                usuario.getId()
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
-    private String resolveName(GoogleUserInfo googleUser) {
-        if (googleUser.name() != null && !googleUser.name().isBlank()) {
-            return googleUser.name();
-        }
-        return googleUser.email();
-    }
 }
