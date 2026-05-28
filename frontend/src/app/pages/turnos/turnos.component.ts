@@ -47,15 +47,18 @@ export class TurnosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
     this.api.meta().subscribe(meta => this.meta = meta);
 
-    if (this.isAdmin()) {
+    if (this.rolActivo === 'ADMINISTRADOR') {
       this.api.usuarios().subscribe({
         next: (us) => this.usuarios = us,
         error: () => this.error = 'No se pudo cargar la lista de usuarios.'
       });
-      this.api.zonas().subscribe(z => this.zonas = z);
+
+      this.api.zonas().subscribe({
+        next: (z) => this.zonas = z,
+        error: () => this.error = 'No se pudo cargar la lista de zonas.'
+      });
     }
     this.cargar();
   }
@@ -63,7 +66,7 @@ export class TurnosComponent implements OnInit {
   cargar(): void {
     this.api.turnos().subscribe({
       next: (data) => {
-        if (this.isAdmin()) {
+        if (this.rolActivo === 'ADMINISTRADOR' || this.rolActivo === 'COORDINADOR') {
           this.turnos = data;
         } else {
           this.turnos = data.filter(turno => turno.usuarioId === this.usuarioIdActivo);
