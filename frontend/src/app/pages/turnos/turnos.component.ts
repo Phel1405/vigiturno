@@ -23,13 +23,11 @@ export class TurnosComponent implements OnInit {
   rolActivo: string = 'DOCENTE';
 
   constructor(private readonly api: ApiService) {
-    // Leemos directamente los datos reales guardados por el login en app.component / login.component
     const storedId = localStorage.getItem('usuarioId') || localStorage.getItem('usuarioActivo');
     if (storedId) {
       this.usuarioIdActivo = Number(storedId);
     }
 
-    // Obtenemos el rol real guardado en la sesión
     const storedRol = localStorage.getItem('usuarioRol');
     if (storedRol) {
       this.rolActivo = storedRol;
@@ -47,40 +45,27 @@ export class TurnosComponent implements OnInit {
   isMiTurno(turno: Turno): boolean {
     return turno.usuarioId === this.usuarioIdActivo;
   }
-  get turnosFiltrados(): Turno[] {
-    if (this.isAdmin()) {
-      return this.turnos;
-    }else{
-      return this.turnos.filter(t => this.isMiTurno(t));
-    }
-  }
 
   ngOnInit(): void {
-    // 1. Cargar metadatos globales
+
     this.api.meta().subscribe(meta => this.meta = meta);
 
-    // 2. Si es Administrador/Coordinador, sí necesita la lista de usuarios para el combo "Docente"
     if (this.isAdmin()) {
       this.api.usuarios().subscribe({
         next: (us) => this.usuarios = us,
         error: () => this.error = 'No se pudo cargar la lista de usuarios.'
       });
-      // Nota: Como administrador también cargamos las zonas para el formulario
       this.api.zonas().subscribe(z => this.zonas = z);
     }
-
-    // 3. Cargar los turnos inmediatamente (ya conocemos el rol de manera segura y síncrona)
     this.cargar();
   }
 
   cargar(): void {
     this.api.turnos().subscribe({
       next: (data) => {
-        // Hacemos el filtrado drástico aquí apenas llegan los datos del servidor
         if (this.isAdmin()) {
-          this.turnos = data; // El Administrador/Coordinador ve todo
+          this.turnos = data;
         } else {
-          // El Docente es filtrado inmediatamente por su ID activo
           this.turnos = data.filter(turno => turno.usuarioId === this.usuarioIdActivo);
         }
       },
