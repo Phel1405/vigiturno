@@ -9,6 +9,7 @@ import com.javeriana.vigiturno.services.UsuarioService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,9 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioRestController {
 
     private final UsuarioService usuarioService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioRestController(UsuarioService usuarioService) {
+    public UsuarioRestController(UsuarioService usuarioService, PasswordEncoder passwordEncoder) {
         this.usuarioService = usuarioService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
@@ -67,7 +70,14 @@ public class UsuarioRestController {
     private void copiar(UsuarioRequest request, Usuario usuario) {
         usuario.setNombreCompleto(request.nombreCompleto());
         usuario.setCorreo(request.correo());
-        usuario.setPassword(request.password() == null || request.password().isBlank() ? "123456" : request.password());
+        
+        String rawPassword = request.password();
+        if (rawPassword != null && !rawPassword.isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(rawPassword));
+        } else if (usuario.getPassword() == null) {
+            usuario.setPassword(passwordEncoder.encode("123456"));
+        }
+        
         usuario.setRol(request.rol());
         usuario.setActivo(request.activo() != null ? request.activo() : Boolean.TRUE);
     }

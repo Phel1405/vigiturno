@@ -24,6 +24,7 @@ import java.time.LocalTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class SeedDataRunner implements CommandLineRunner {
     private final IncidenteRepository incidenteRepository;
     private final NotificacionRepository notificacionRepository;
     private final ReasignacionRepository reasignacionRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -51,39 +53,39 @@ public class SeedDataRunner implements CommandLineRunner {
         Usuario admin = Usuario.builder()
                 .nombreCompleto("Laura Martínez - Administradora")
                 .correo("admin@vigiturno.edu.co")
-                .password("admin123")
+                .password(passwordEncoder.encode("admin123"))
                 .rol(RolNombre.ADMINISTRADOR)
                 .activo(true)
                 .build();
-
+ 
         Usuario coordinador = Usuario.builder()
                 .nombreCompleto("Carlos Gómez - Coordinador")
                 .correo("coordinador@vigiturno.edu.co")
-                .password("coord123")
+                .password(passwordEncoder.encode("coord123"))
                 .rol(RolNombre.COORDINADOR)
                 .activo(true)
                 .build();
-
+ 
         Usuario docenteAna = Usuario.builder()
                 .nombreCompleto("Ana Pérez - Docente")
                 .correo("ana.perez@vigiturno.edu.co")
-                .password("docente123")
+                .password(passwordEncoder.encode("docente123"))
                 .rol(RolNombre.DOCENTE)
                 .activo(true)
                 .build();
-
+ 
         Usuario docenteLuis = Usuario.builder()
                 .nombreCompleto("Luis Rodríguez - Docente")
                 .correo("luis.rodriguez@vigiturno.edu.co")
-                .password("docente123")
+                .password(passwordEncoder.encode("docente123"))
                 .rol(RolNombre.DOCENTE)
                 .activo(true)
                 .build();
-
+ 
         Usuario docenteMarta = Usuario.builder()
                 .nombreCompleto("Marta Sánchez - Docente")
                 .correo("marta.sanchez@vigiturno.edu.co")
-                .password("docente123")
+                .password(passwordEncoder.encode("docente123"))
                 .rol(RolNombre.DOCENTE)
                 .activo(true)
                 .build();

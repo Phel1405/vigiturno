@@ -9,6 +9,18 @@ export class ApiService {
 
   constructor(private readonly http: HttpClient) {}
 
+  login(correo: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.api}/auth/login`, { correo, password });
+  }
+
+  registrar(data: any): Observable<any> {
+    return this.http.post<any>(`${this.api}/auth/register`, data);
+  }
+
+  googleLogin(idToken: string): Observable<any> {
+    return this.http.post<any>(`${this.api}/auth/google`, { idToken });
+  }
+
   meta(): Observable<Meta> { return this.http.get<Meta>(`${this.api}/meta`); }
   dashboard(): Observable<Dashboard> { return this.http.get<Dashboard>(`${this.api}/dashboard/admin`); }
   mapaCalor(): Observable<HeatmapZona[]> { return this.http.get<HeatmapZona[]>(`${this.api}/dashboard/mapa-calor-zonas`); }
