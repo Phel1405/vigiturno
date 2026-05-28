@@ -29,7 +29,6 @@ import { Usuario } from './core/models';
         </div>
 
         <nav>
-          <!-- ADMIN NAVBAR -->
           <ng-container *ngIf="getRol() === 'ADMINISTRADOR'">
             <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Módulo Administrador</div>
             <a routerLink="/dashboard" routerLinkActive="active">Dashboard General</a>
@@ -41,7 +40,6 @@ import { Usuario } from './core/models';
             <a routerLink="/notificaciones" routerLinkActive="active">Notificaciones</a>
           </ng-container>
 
-          <!-- COORDINADOR NAVBAR -->
           <ng-container *ngIf="getRol() === 'COORDINADOR'">
             <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Módulo Coordinador</div>
             <a routerLink="/dashboard" routerLinkActive="active">Mapa de Zonas</a>
@@ -51,14 +49,13 @@ import { Usuario } from './core/models';
             <a routerLink="/notificaciones" routerLinkActive="active">Notificaciones</a>
           </ng-container>
 
-          <!-- DOCENTE NAVBAR -->
           <ng-container *ngIf="getRol() === 'DOCENTE'">
             <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Módulo Docente</div>
             <a routerLink="/turnos" routerLinkActive="active">Mis Turnos</a>
             <a routerLink="/incidentes" routerLinkActive="active">Reportar Incidente</a>
             <a routerLink="/notificaciones" routerLinkActive="active">Mis Notificaciones</a>
           </ng-container>
-          <!-- NO NAVBAR -->
+          
           <ng-container *ngIf="!usuarioSeleccionadoId">
             <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Selecciona un rol</div>
             <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
@@ -75,15 +72,32 @@ import { Usuario } from './core/models';
 export class AppComponent implements OnInit {
   usuarios: Usuario[] = [];
   usuarioSeleccionadoId: number | null = null;
-  
+
   constructor(private api: ApiService, private router: Router) {}
 
   ngOnInit() {
-    this.api.usuarios().subscribe(data => this.usuarios = data);
-    const stored = localStorage.getItem('usuarioActivo');
-    if (stored) {
-      this.usuarioSeleccionadoId = Number(stored);
-    }
+    // 1. Forzar credenciales de Administrador de manera síncrona en el almacenamiento local
+    localStorage.setItem('usuarioActivo', '1');
+    this.usuarioSeleccionadoId = 1;
+
+    // 2. Mockear una lista inicial de usuarios para que el método getRol() no falle mientras responde la API
+    this.usuarios = [
+      { id: 1, nombreCompleto: 'Admin Temporal', correo: 'admin@javeriana.edu.co', rol: 'ADMINISTRADOR', activo: true }
+    ];
+
+    // 3. Consultar los datos reales del servidor para mantener la consistencia
+    this.api.usuarios().subscribe({
+      next: (data) => {
+        this.usuarios = data;
+        // Si el usuario con ID 1 real tiene otro rol en base de datos, lo respetará tras cargar
+      },
+      error: () => {
+        console.warn('No se pudo conectar con el backend. Usando datos mockeados de administrador.');
+      }
+    });
+
+    // 4. Redirección automática inmediata hacia el dashboard general de control
+    this.router.navigate(['/dashboard']);
   }
 
   salir() {
@@ -103,4 +117,3 @@ export class AppComponent implements OnInit {
     return rol === 'ADMINISTRADOR' || rol === 'COORDINADOR';
   }
 }
-
