@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/register").permitAll()
+                .requestMatchers("/api/auth/google").permitAll()
                 .requestMatchers("/error").permitAll()
                 
                 // Control por roles. Recuerda que hasRole("ROL") valida automáticamente la autoridad "ROLE_ROL"

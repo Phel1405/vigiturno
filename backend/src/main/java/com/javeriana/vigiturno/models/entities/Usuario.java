@@ -41,4 +41,13 @@ public class Usuario {
 
     @Column(nullable = false)
     private Boolean activo;
+
+    @Column(length = 30)
+    private String provider;
+
+    @Column(name = "provider_id", length = 120)
+    private String providerId;
+
+    @Column(name = "picture_url", length = 500)
+    private String pictureUrl;
 }

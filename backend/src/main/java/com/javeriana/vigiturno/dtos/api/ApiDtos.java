@@ -16,6 +16,8 @@ public final class ApiDtos {
 
     public record LoginRequest(String correo, String password) {}
     public record LoginResponse(String token, String correo, String nombreCompleto, RolNombre rol, Long id) {}
+    public record GoogleLoginRequest(String idToken) {}
+
     public record UsuarioDto(Long id, String nombreCompleto, String correo, RolNombre rol, Boolean activo) {}
     public record UsuarioRequest(String nombreCompleto, String correo, String password, RolNombre rol, Boolean activo) {}
 

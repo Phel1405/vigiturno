@@ -17,6 +17,10 @@ export class ApiService {
     return this.http.post<any>(`${this.api}/auth/register`, data);
   }
 
+  googleLogin(idToken: string): Observable<any> {
+    return this.http.post<any>(`${this.api}/auth/google`, { idToken });
+  }
+
   meta(): Observable<Meta> { return this.http.get<Meta>(`${this.api}/meta`); }
   dashboard(): Observable<Dashboard> { return this.http.get<Dashboard>(`${this.api}/dashboard/admin`); }
   mapaCalor(): Observable<HeatmapZona[]> { return this.http.get<HeatmapZona[]>(`${this.api}/dashboard/mapa-calor-zonas`); }

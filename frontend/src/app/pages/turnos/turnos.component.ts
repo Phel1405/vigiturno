@@ -20,21 +20,22 @@ export class TurnosComponent implements OnInit {
   form: Turno = this.base();
 
   usuarioIdActivo: number | null = null;
-  rolActivo: string = 'ADMINISTRADOR';
+  rolActivo: string = 'DOCENTE';
 
   constructor(private readonly api: ApiService) {
-    const stored = localStorage.getItem('usuarioActivo');
-    if (stored) {
-      this.usuarioIdActivo = Number(stored);
-      this.api.usuarios().subscribe(us => {
-        const u = us.find(x => x.id === this.usuarioIdActivo);
-        if (u) this.rolActivo = u.rol;
-      });
+    const storedId = localStorage.getItem('usuarioId') || localStorage.getItem('usuarioActivo');
+    if (storedId) {
+      this.usuarioIdActivo = Number(storedId);
+    }
+
+    const storedRol = localStorage.getItem('usuarioRol');
+    if (storedRol) {
+      this.rolActivo = storedRol;
     }
   }
 
   isAdmin(): boolean {
-    return this.rolActivo !== 'DOCENTE';
+    return this.rolActivo === 'ADMINISTRADOR' || this.rolActivo === 'COORDINADOR';
   }
 
   get docentes(): Usuario[] {
@@ -46,21 +47,31 @@ export class TurnosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cargar();
-    this.api.usuarios().subscribe(data => this.usuarios = data);
-    this.api.zonas().subscribe(data => this.zonas = data);
+
     this.api.meta().subscribe(meta => this.meta = meta);
+
+    if (this.isAdmin()) {
+      this.api.usuarios().subscribe({
+        next: (us) => this.usuarios = us,
+        error: () => this.error = 'No se pudo cargar la lista de usuarios.'
+      });
+      this.api.zonas().subscribe(z => this.zonas = z);
+    }
+    this.cargar();
   }
 
-  cargar(): void { 
-    this.api.turnosProximos(7).subscribe({ 
-      next: data => {
-        this.turnos = this.isAdmin() ? data : data.filter(t => t.usuarioId === this.usuarioIdActivo);
-      }, 
-      error: () => this.error = 'No se pudieron cargar turnos.' 
-    }); 
+  cargar(): void {
+    this.api.turnos().subscribe({
+      next: (data) => {
+        if (this.isAdmin()) {
+          this.turnos = data;
+        } else {
+          this.turnos = data.filter(turno => turno.usuarioId === this.usuarioIdActivo);
+        }
+      },
+      error: () => this.error = 'No se pudieron cargar los turnos.'
+    });
   }
-  nuevo(): void { this.editando = false; this.form = this.base(); }
   editar(turno: Turno): void { this.editando = true; this.form = { ...turno, horaInicio: this.normalizarHora(turno.horaInicio), horaFin: this.normalizarHora(turno.horaFin) }; }
 
   guardar(): void {
@@ -120,4 +131,6 @@ export class TurnosComponent implements OnInit {
     const hoy = new Date().toISOString().slice(0, 10);
     return { fecha: hoy, horaInicio: '10:00', horaFin: '10:30', estado: 'PENDIENTE', usuarioId: 0, zonaId: 0 };
   }
+  nuevo(): void { this.editando = false; this.form = this.base(); }
+
 }

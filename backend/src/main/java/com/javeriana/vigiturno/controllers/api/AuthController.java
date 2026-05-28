@@ -2,6 +2,7 @@ package com.javeriana.vigiturno.controllers.api;
 
 import com.javeriana.vigiturno.dtos.api.ApiDtos.LoginRequest;
 import com.javeriana.vigiturno.dtos.api.ApiDtos.LoginResponse;
+import com.javeriana.vigiturno.dtos.api.ApiDtos.GoogleLoginRequest;
 import com.javeriana.vigiturno.dtos.api.ApiDtos.UsuarioRequest;
 import com.javeriana.vigiturno.dtos.api.ApiDtos.UsuarioDto;
 import com.javeriana.vigiturno.dtos.api.ApiMapper;
@@ -9,7 +10,10 @@ import com.javeriana.vigiturno.models.entities.Usuario;
 import com.javeriana.vigiturno.models.enums.RolNombre;
 import com.javeriana.vigiturno.repositories.UsuarioRepository;
 import com.javeriana.vigiturno.security.JwtTokenProvider;
+import com.javeriana.vigiturno.services.GoogleTokenService;
+import com.javeriana.vigiturno.services.GoogleTokenService.GoogleUserInfo;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
