@@ -1,0 +1,345 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ApiService } from '../../core/api.service';
+
+@Component({
+  selector: 'app-register',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  styles: [`
+    .register-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      font-family: 'Outfit', 'Inter', sans-serif;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient background lights */
+    .bg-light-1 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(0,0,0,0) 70%);
+      top: -100px;
+      left: -100px;
+      z-index: 1;
+    }
+    .bg-light-2 {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(0,0,0,0) 70%);
+      bottom: -150px;
+      right: -100px;
+      z-index: 1;
+    }
+
+    .register-card {
+      position: relative;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo-container {
+      width: 55px;
+      height: 55px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+    }
+
+    .brand-name {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-tagline {
+      font-size: 13px;
+      color: #94a3b8;
+      margin: 4px 0 0 0;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 11px 15px;
+      color: #ffffff;
+      font-size: 14px;
+      transition: all 0.25s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+    select.input-field {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+
+    select.input-field option {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .error-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      padding: 11px 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .success-banner {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: #86efac;
+      padding: 11px 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .register-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+      margin-top: 10px;
+    }
+
+    .register-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    .register-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    .login-link a {
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .login-link a:hover {
+      color: #60a5fa;
+      text-decoration: underline;
+    }
+  `],
+  template: `
+    <div class="register-container">
+      <div class="bg-light-1"></div>
+      <div class="bg-light-2"></div>
+
+      <div class="register-card">
+        <div class="brand-header">
+          <div class="logo-container">VT</div>
+          <h1 class="brand-name">Crear Cuenta</h1>
+          <p class="brand-tagline">Regístrate en la plataforma VigiTurno</p>
+        </div>
+
+        <div class="error-banner" *ngIf="errorMsg">
+          {{ errorMsg }}
+        </div>
+
+        <div class="success-banner" *ngIf="successMsg">
+          {{ successMsg }}
+        </div>
+
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm" *ngIf="!registered">
+          <div class="form-group">
+            <label class="form-label" for="nombre">Nombre Completo</label>
+            <input 
+              type="text" 
+              id="nombre" 
+              name="nombre" 
+              class="input-field" 
+              placeholder="Nombre y Apellido" 
+              [(ngModel)]="nombreCompleto" 
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Correo Electrónico</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="input-field" 
+              placeholder="ejemplo@vigiturno.edu.co" 
+              [(ngModel)]="correo" 
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Contraseña</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="input-field" 
+              placeholder="Mínimo 6 caracteres" 
+              [(ngModel)]="password" 
+              minlength="6"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="rol">Rol en el Sistema</label>
+            <select id="rol" name="rol" class="input-field" [(ngModel)]="rol" required>
+              <option value="DOCENTE">Docente</option>
+              <option value="COORDINADOR">Coordinador de Nivel</option>
+              <option value="ADMINISTRADOR">Administrador</option>
+            </select>
+          </div>
+
+          <button type="submit" class="register-btn" [disabled]="registerForm.invalid || loading">
+            <span *ngIf="!loading">Registrarme</span>
+            <span *ngIf="loading">Registrando...</span>
+          </button>
+        </form>
+
+        <div class="login-link">
+          ¿Ya tienes una cuenta? <a href="/login">Inicia sesión</a>
+        </div>
+      </div>
+    </div>
+  `
+})
+export class RegisterComponent {
+  nombreCompleto = '';
+  correo = '';
+  password = '';
+  rol = 'DOCENTE';
+  
+  loading = false;
+  registered = false;
+  errorMsg = '';
+  successMsg = '';
+
+  constructor(private api: ApiService, private router: Router) {}
+
+  onSubmit() {
+    if (!this.nombreCompleto || !this.correo || !this.password || !this.rol) return;
+    this.loading = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+
+    const payload = {
+      nombreCompleto: this.nombreCompleto,
+      correo: this.correo,
+      password: this.password,
+      rol: this.rol,
+      activo: true
+    };
+
+    this.api.registrar(payload).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.registered = true;
+        this.successMsg = '¡Registro completado con éxito! Redirigiéndote al inicio de sesión...';
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2500);
+      },
+      error: (err) => {
+        this.loading = false;
+        if (err.error && typeof err.error === 'string') {
+          this.errorMsg = err.error;
+        } else if (err.error && err.error.message) {
+          this.errorMsg = err.error.message;
+        } else {
+          this.errorMsg = 'Error en el servidor al registrar el usuario.';
+        }
+      }
+    });
+  }
+}

@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from './core/api.service';
-import { Usuario } from './core/models';
 
 @Component({
   selector: 'app-root',
@@ -20,12 +18,15 @@ import { Usuario } from './core/models';
           </div>
         </div>
 
-        <div style="padding: 1rem;" *ngIf="usuarioSeleccionadoId">
-          <label style="font-size: 0.8rem; color: #666;">Usuario actual</label>
-          <div style="font-size: 0.9rem; margin-top: 0.25rem;">
-            <strong>{{ getRol() }}</strong>
+        <div style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); margin: 10px 0;" *ngIf="usuarioSeleccionadoId">
+          <label style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Usuario actual</label>
+          <div style="font-size: 0.9rem; margin-top: 0.25rem; font-weight: bold; color: #ffffff;">
+            {{ usuarioNombre }}
           </div>
-          <button class="ghost" style="margin-top: 0.5rem; width: 100%; color: #e74c3c; border: 1px solid #e74c3c;" (click)="salir()">Salir</button>
+          <div style="font-size: 0.75rem; color: #3b82f6; font-weight: 600; margin-top: 2px;">
+            {{ getRol() }}
+          </div>
+          <button class="ghost" style="margin-top: 0.75rem; width: 100%; color: #ef4444; border: 1px solid #ef4444; background: transparent;" (click)="salir()">Cerrar Sesión</button>
         </div>
 
         <nav>
@@ -58,10 +59,11 @@ import { Usuario } from './core/models';
             <a routerLink="/incidentes" routerLinkActive="active">Reportar Incidente</a>
             <a routerLink="/notificaciones" routerLinkActive="active">Mis Notificaciones</a>
           </ng-container>
+          
           <!-- NO NAVBAR -->
           <ng-container *ngIf="!usuarioSeleccionadoId">
-            <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Selecciona un rol</div>
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+            <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: bold; color: #999; text-transform: uppercase;">Inicia Sesión</div>
+            <a routerLink="/login" routerLinkActive="active">Iniciar Sesión</a>
           </ng-container>
         </nav>
       </aside>
@@ -73,29 +75,31 @@ import { Usuario } from './core/models';
   `
 })
 export class AppComponent implements OnInit {
-  usuarios: Usuario[] = [];
+  usuarioNombre: string | null = null;
+  usuarioRol: string | null = null;
   usuarioSeleccionadoId: number | null = null;
   
-  constructor(private api: ApiService, private router: Router) {}
+  constructor(private router: Router) {}
 
   ngOnInit() {
-    this.api.usuarios().subscribe(data => this.usuarios = data);
-    const stored = localStorage.getItem('usuarioActivo');
-    if (stored) {
-      this.usuarioSeleccionadoId = Number(stored);
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.usuarioNombre = localStorage.getItem('usuarioNombre');
+      this.usuarioRol = localStorage.getItem('usuarioRol');
+      this.usuarioSeleccionadoId = Number(localStorage.getItem('usuarioId'));
     }
   }
 
   salir() {
-    localStorage.removeItem('usuarioActivo');
+    localStorage.clear();
+    this.usuarioNombre = null;
+    this.usuarioRol = null;
     this.usuarioSeleccionadoId = null;
-    this.router.navigate(['/']).then(() => window.location.reload());
+    this.router.navigate(['/login']);
   }
 
   getRol(): string {
-    if (!this.usuarioSeleccionadoId) return '';
-    const u = this.usuarios.find(x => x.id === this.usuarioSeleccionadoId);
-    return u ? u.rol : 'ADMINISTRADOR';
+    return this.usuarioRol || '';
   }
 
   isAdmin(): boolean {
@@ -103,4 +107,3 @@ export class AppComponent implements OnInit {
     return rol === 'ADMINISTRADOR' || rol === 'COORDINADOR';
   }
 }
-
